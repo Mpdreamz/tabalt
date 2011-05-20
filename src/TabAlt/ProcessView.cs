@@ -14,5 +14,6 @@ namespace TabAlt
 		public string ProcessName { get; set; }
 		public ImageSource ImageSource { get; set; }
 		public Process Process { get; set; }
+		public ShowableWindow Window { get; set; }
 	}
 }

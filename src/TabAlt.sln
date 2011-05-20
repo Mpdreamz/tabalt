@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabAlt", "TabAlt\TabAlt.csproj", "{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{784F30A9-88EF-4A4F-B384-245DCCE9055A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Debug|x86.Build.0 = Debug|x86
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Release|x86.ActiveCfg = Release|x86
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Release|x86.Build.0 = Release|x86
+		{784F30A9-88EF-4A4F-B384-245DCCE9055A}.Debug|x86.ActiveCfg = Debug|x86
+		{784F30A9-88EF-4A4F-B384-245DCCE9055A}.Debug|x86.Build.0 = Debug|x86
+		{784F30A9-88EF-4A4F-B384-245DCCE9055A}.Release|x86.ActiveCfg = Release|x86
+		{784F30A9-88EF-4A4F-B384-245DCCE9055A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
