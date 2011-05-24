@@ -5,8 +5,7 @@
         WindowStyle="None" ShowInTaskbar="False" AllowsTransparency="True" Topmost="true"
         Background="Transparent" WindowStartupLocation="CenterScreen" KeyUp="Window_KeyUp"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Closing="OnClose" StateChanged="OnStateChanged" IsVisibleChanged="OnIsVisibleChanged"
-        >
+        Closing="OnClose" StateChanged="OnStateChanged" IsVisibleChanged="OnIsVisibleChanged" Activated="Window_Activated" Deactivated="Window_Deactivated">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -35,7 +34,9 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Image Name="BigIcon" Width="32" Height="32" Margin="5,0,0,0" Source="logo.png"/>
-                        <TextBox Grid.Column="1" CaretBrush="White"  Name="txtFilter" Background="Transparent" BorderBrush="{StaticResource EntryBorderBrush}" Foreground="White" FontSize="32" SelectionBrush="#FFD6DEF2" KeyUp="textBox1_KeyUp" />
+                        <TextBox Grid.Column="1" CaretBrush="White"
+                                 TabIndex="0" Focusable="true"
+                                 Name="txtFilter" Background="Transparent" BorderBrush="{StaticResource EntryBorderBrush}" Foreground="White" FontSize="32" SelectionBrush="#FFD6DEF2" KeyUp="textBox1_KeyUp" />
                     </Grid>
                 </Border>
                 <ListView Height="auto" MaxHeight="200" ItemsSource="{Binding ProcessViewCollection}" Grid.Row="1" BorderBrush="{StaticResource WindowFrameBorderBrush}"

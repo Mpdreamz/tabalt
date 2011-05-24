@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Management;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Threading;
 
 namespace TabAlt
 {
@@ -28,18 +29,23 @@ namespace TabAlt
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private bool DeActivatedWhileSwitching { get; set; }
 		private System.Windows.Forms.NotifyIcon _notificationIcon;
 
 		ObservableCollection<ProcessView> _ProcessViewCollection = new ObservableCollection<ProcessView>();
 		public ObservableCollection<ProcessView> ProcessViewCollection { get { return _ProcessViewCollection; } }
 		public MainWindow()
 		{
-			GlobalAltTabHook.Hook(() => 
-			{ 
-				this.Show(); 
-				this.WindowState = System.Windows.WindowState.Normal; 
-				while (!this.IsActive) this.Activate(); 
-				this.FocusInput(); 
+			GlobalAltTabHook.Hook(() =>
+			{
+				this.Show();
+				this.WindowState = System.Windows.WindowState.Normal;
+				while (!this.IsActive) this.Activate();
+			},
+			() =>
+			{
+				return this.WindowState == System.Windows.WindowState.Normal
+					&& this.IsVisible && this.IsActive;
 			});
 			this.ListApplications();
 			InitializeComponent();
@@ -95,8 +101,7 @@ namespace TabAlt
 		}
 		private void Window_KeyUp(object sender, KeyEventArgs e)
 		{
-			this.KeyDown(e);
-			
+			this.KeyDown(e);	
 		}
 
 		private void textBox1_KeyUp(object sender, KeyEventArgs e)
@@ -135,7 +140,15 @@ namespace TabAlt
 
 		private void lvApplications_KeyDown(object sender, KeyEventArgs e)
 		{
-			
+			if (e.Key != Key.Up
+			&& e.Key != Key.Down)
+			{
+				this.FocusInput();
+				KeyEventArgs e1 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, e.Key);
+				e1.RoutedEvent = Keyboard.KeyDownEvent;
+				this.txtFilter.RaiseEvent(e1);
+				return;
+			}
 		}
 
 		private void lvApplications_KeyUp(object sender, KeyEventArgs e)
@@ -156,9 +169,11 @@ namespace TabAlt
 				var val = this.lvApplications.SelectedValue;
 				if (val != null)
 				{
+					DeActivatedWhileSwitching = true;
 					((ProcessView)val).Window.Activate();
 				}
 				Hide();
+				DeActivatedWhileSwitching = false;
 				return true;
 			}
 			return false;
@@ -181,26 +196,48 @@ namespace TabAlt
 			}
 			else
 				m_storedWindowState = WindowState;
+			this.Activate();
 		}
 		void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs args)
 		{
 			if ((bool)args.NewValue)
 			{
-				FocusInput();
+				this.Activate();
+				FocusInputAndActivateWindow();
 			}
+		}
+		void FocusInputAndActivateWindow()
+		{
+			this.Dispatcher.BeginInvoke((Action)delegate
+				{
+					var b = this.Activate();
+					while (!this.IsActive) this.Activate();
+					
+					this.Focus();
+					//this.txtFilter.Focusable = true;
+					this.txtFilter.Focus();
+					//Keyboard.Focus(this.txtFilter);
+					this.txtFilter.SelectAll();
+					this.txtFilter.ReleaseMouseCapture();
+
+					Keyboard.Focus(this.txtFilter);
+				}, DispatcherPriority.Render);
 		}
 		void FocusInput()
 		{
-			this.txtFilter.Focusable = true;
-			this.txtFilter.Focus();
-			Keyboard.Focus(this.txtFilter);
 			this.Dispatcher.BeginInvoke((Action)delegate
-				{
-					this.txtFilter.Focusable = true;
-					this.txtFilter.Focus();
-					Keyboard.Focus(this.txtFilter);
-				}, DispatcherPriority.Render);
-			}
+			{
+				//this.Focus();
+				//this.txtFilter.Focusable = true;
+				this.txtFilter.Focus();
+				//Keyboard.Focus(this.txtFilter);
+				//this.txtFilter.SelectAll();
+				//this.txtFilter.ReleaseMouseCapture();
+
+				Keyboard.Focus(this.txtFilter);
+			}, DispatcherPriority.Render);
+		}
+
 
 		void m_notifyIcon_Click(object sender, EventArgs e)
 		{
@@ -208,5 +245,17 @@ namespace TabAlt
 			WindowState = m_storedWindowState;
 		}
 
+		private void Window_Activated(object sender, EventArgs e)
+		{
+			this.FocusInputAndActivateWindow();
+		}
+
+		private void Window_Deactivated(object sender, EventArgs e)
+		{
+			if (!this.DeActivatedWhileSwitching)
+				this.Hide();
+
+			this.DeActivatedWhileSwitching = false;
+		}
 	}
 }

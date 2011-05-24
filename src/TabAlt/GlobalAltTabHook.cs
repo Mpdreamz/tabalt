@@ -19,8 +19,9 @@ namespace TabAlt
 		private static IntPtr _hookID = IntPtr.Zero;
 
 		private static Action AlternativeAltTabBehavior { get; set; }
+		private static Func<bool> ShouldIgnoreAlt { get; set; }
 
-		public static void Hook(Action callback)
+		public static void Hook(Action callback, Func<bool> shouldIgnoreAlt)
 		{
 			using (Process curProcess = Process.GetCurrentProcess())
 			using (ProcessModule curModule = curProcess.MainModule)
@@ -28,6 +29,7 @@ namespace TabAlt
 				_hookID = SetWindowsHookEx(WH_KEYBOARD_LL, _proc, GetModuleHandle(curModule.ModuleName), 0);
 			}
 			GlobalAltTabHook.AlternativeAltTabBehavior = callback;
+			GlobalAltTabHook.ShouldIgnoreAlt = shouldIgnoreAlt;
 		}
 		public static void UnHook()
 		{
@@ -41,7 +43,7 @@ namespace TabAlt
 		{
 			bool forward = true;
 
-			if (nCode >= 0 && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+			if (nCode >= 0 && (wParam == (IntPtr)WM_SYSKEYUP || wParam == (IntPtr)WM_SYSKEYDOWN))
 			{
 				int vkCode = lParam.vkCode;
 				if (vkCode == 9 && lParam.flags == 32)
