@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace TabAlt
 {
@@ -25,6 +26,9 @@ namespace TabAlt
 		private static extern int EnumWindows(EnumWindowsProc ewp, int lParam);
 		[DllImport("user32.dll")]
 		private static extern bool IsWindowVisible(int hWnd);
+		[DllImport("user32.dll")]
+		internal static extern IntPtr GetForegroundWindow();
+	
 
 		//delegate used for EnumWindows() callback function
 
@@ -37,12 +41,46 @@ namespace TabAlt
 		{
 			return WindowsEnumeration.GetShowableWindows(false, false);
 		}
+		//implement IEnumerable
+		public static void ActivateWindow(string name)
+		{
+			var windows = new List<ShowableWindow>();
+			EnumWindowsProc ewp = new EnumWindowsProc((hWnd, lParam) =>
+			{
+				StringBuilder title = new StringBuilder(256);
+				StringBuilder module = new StringBuilder(256);
+
+				GetWindowModuleFileName(hWnd, module, 256);
+				GetWindowText(hWnd, title, 256);
+				if (title.ToString() != name)
+					return true;
+
+				int processId = 0;
+				var x = GetWindowThreadProcessId(new HandleRef(new object { }, new IntPtr(hWnd)), out processId);
+				Process process = null;
+				try
+				{
+					process = Process.GetProcessById(processId);
+				}
+				catch { }
+				var window = new ShowableWindow(title.ToString(), (IntPtr)hWnd, process);
+				
+				windows.Add(window);
+				return true;
+			});
+			//Enumerate all Windows
+			EnumWindows(ewp, 0);
+			if (windows.Any())
+			{          
+				windows.First().ActiveOnLastActiveScreen();
+			}
+
+		}
 
 		public static IEnumerable<ShowableWindow> GetShowableWindows(bool showInvisible, bool showNotitle)
 		{
 			var windows = new List<ShowableWindow>();
-			var processes = Process.GetProcesses(".").ToList();
-			EnumWindowsProc ewp = new EnumWindowsProc((hWnd, lParam)=>
+			EnumWindowsProc ewp = new EnumWindowsProc((hWnd, lParam) =>
 			{
 				if (showInvisible == false && !IsWindowVisible(hWnd))
 					return (true);
@@ -57,7 +95,7 @@ namespace TabAlt
 					return (true);
 
 				int processId = 0;
-				var x = GetWindowThreadProcessId(new HandleRef(new object{}, new IntPtr(hWnd)), out processId);
+				var x = GetWindowThreadProcessId(new HandleRef(new object { }, new IntPtr(hWnd)), out processId);
 				Process process = null;
 				try
 				{

@@ -15,46 +15,11 @@ namespace TabAlt
 
 		private const int WM_SYSKEYDOWN = 0x0104;
 		private const int WM_SYSKEYUP = 0x0105;
+		
+		private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
 		private static LowLevelKeyboardProc _proc = HookCallback;
 		private static IntPtr _hookID = IntPtr.Zero;
-
 		private static Action AlternativeAltTabBehavior { get; set; }
-		private static Func<bool> ShouldIgnoreAlt { get; set; }
-
-		public static void Hook(Action callback, Func<bool> shouldIgnoreAlt)
-		{
-			using (Process curProcess = Process.GetCurrentProcess())
-			using (ProcessModule curModule = curProcess.MainModule)
-			{
-				_hookID = SetWindowsHookEx(WH_KEYBOARD_LL, _proc, GetModuleHandle(curModule.ModuleName), 0);
-			}
-			GlobalAltTabHook.AlternativeAltTabBehavior = callback;
-			GlobalAltTabHook.ShouldIgnoreAlt = shouldIgnoreAlt;
-		}
-		public static void UnHook()
-		{
-			UnhookWindowsHookEx(_hookID);
-		}
-
-
-		private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
-
-		private static IntPtr HookCallback(int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam)
-		{
-			bool forward = true;
-
-			if (nCode >= 0 && (wParam == (IntPtr)WM_SYSKEYUP || wParam == (IntPtr)WM_SYSKEYDOWN))
-			{
-				int vkCode = lParam.vkCode;
-				if (vkCode == 9 && lParam.flags == 32)
-				{
-					if (GlobalAltTabHook.AlternativeAltTabBehavior != null)
-						GlobalAltTabHook.AlternativeAltTabBehavior();
-					return new IntPtr(1);
-				}
-			}
-			return CallNextHookEx(_hookID, nCode, wParam, ref lParam);
-		}
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
@@ -76,6 +41,36 @@ namespace TabAlt
 			public int flags;
 			int time;
 			int dwExtraInfo;
+		}
+		
+		public static void Hook(Action callback)
+		{
+			using (Process curProcess = Process.GetCurrentProcess())
+			using (ProcessModule curModule = curProcess.MainModule)
+			{
+				_hookID = GlobalAltTabHook.SetWindowsHookEx(WH_KEYBOARD_LL, _proc, GetModuleHandle(curModule.ModuleName), 0);
+			}
+			GlobalAltTabHook.AlternativeAltTabBehavior = callback;
+		}
+
+		public static void UnHook()
+		{
+			GlobalAltTabHook.UnhookWindowsHookEx(_hookID);
+		}
+		
+		private static IntPtr HookCallback(int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam)
+		{
+			if (nCode >= 0 && (wParam == (IntPtr)WM_SYSKEYUP || wParam == (IntPtr)WM_SYSKEYDOWN))
+			{
+				int vkCode = lParam.vkCode;
+				if (vkCode == 9 && lParam.flags == 32)
+				{
+					if (GlobalAltTabHook.AlternativeAltTabBehavior != null)
+						GlobalAltTabHook.AlternativeAltTabBehavior();
+					return new IntPtr(1);
+				}
+			}
+			return CallNextHookEx(_hookID, nCode, wParam, ref lParam);
 		}
 	}
 }

@@ -21,11 +21,9 @@ namespace TabAlt
 		[DllImport("gdi32.dll", SetLastError = true)]
 		private static extern bool DeleteObject(IntPtr hObject);
 
-		// The signature of SHGetFileInfo (located in Shell32.dll)
 		[DllImport("Shell32.dll")]
 		public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, uint uFlags);
  
-
 		public static ImageSource ToImageSource(this Icon icon)
 		{
 			Bitmap bitmap = icon.ToBitmap();
@@ -38,12 +36,11 @@ namespace TabAlt
 				BitmapSizeOptions.FromEmptyOptions());
 
 			if (!DeleteObject(hBitmap))
-			{
 				throw new Win32Exception();
-			}
 
 			return wpfBitmap;
 		}
+
 		public static ImageSource LoadSmallIcon(string processFilePath)
 		{
 			SHFILEINFO shinfo = new SHFILEINFO();
@@ -52,8 +49,8 @@ namespace TabAlt
 			return ico.ToImageSource();
 		}
 	}
-	// This structure will contain information about the file
-	public struct SHFILEINFO
+
+	internal struct SHFILEINFO
 	{
 		// Handle to the icon representing the file
 		public IntPtr hIcon;

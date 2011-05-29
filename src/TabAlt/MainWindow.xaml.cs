@@ -38,14 +38,9 @@ namespace TabAlt
 		{
 			GlobalAltTabHook.Hook(() =>
 			{
+				WindowsEnumeration.ActivateWindow("tabalt");
 				this.Show();
-				this.WindowState = System.Windows.WindowState.Normal;
-				while (!this.IsActive) this.Activate();
-			},
-			() =>
-			{
-				return this.WindowState == System.Windows.WindowState.Normal
-					&& this.IsVisible && this.IsActive;
+				this.Activate();
 			});
 			this.ListApplications();
 			InitializeComponent();
@@ -54,7 +49,7 @@ namespace TabAlt
 			this._notificationIcon = new System.Windows.Forms.NotifyIcon();
 			this._notificationIcon.Text = "tabalt - An alternative ALT TAB implementation";
 			this._notificationIcon.Icon = new System.Drawing.Icon("logo.ico");
-			this._notificationIcon.Click += new EventHandler(m_notifyIcon_Click);
+			this._notificationIcon.Click += new EventHandler(_notificationIcon_Click);
 			this._notificationIcon.Visible = true;
 
 		}
@@ -143,7 +138,7 @@ namespace TabAlt
 			if (e.Key != Key.Up
 			&& e.Key != Key.Down)
 			{
-				this.FocusInput();
+				//this.FocusInput();
 				KeyEventArgs e1 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, e.Key);
 				e1.RoutedEvent = Keyboard.KeyDownEvent;
 				this.txtFilter.RaiseEvent(e1);
@@ -196,7 +191,7 @@ namespace TabAlt
 			}
 			else
 				m_storedWindowState = WindowState;
-			this.Activate();
+			FocusInputAndActivateWindow();
 		}
 		void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs args)
 		{
@@ -210,13 +205,10 @@ namespace TabAlt
 		{
 			this.Dispatcher.BeginInvoke((Action)delegate
 				{
-					var b = this.Activate();
-					while (!this.IsActive) this.Activate();
+					//var b = this.Activate();
+					//while (!this.IsActive) this.Activate();				
 					
-					this.Focus();
-					//this.txtFilter.Focusable = true;
 					this.txtFilter.Focus();
-					//Keyboard.Focus(this.txtFilter);
 					this.txtFilter.SelectAll();
 					this.txtFilter.ReleaseMouseCapture();
 
@@ -227,21 +219,16 @@ namespace TabAlt
 		{
 			this.Dispatcher.BeginInvoke((Action)delegate
 			{
-				//this.Focus();
-				//this.txtFilter.Focusable = true;
 				this.txtFilter.Focus();
-				//Keyboard.Focus(this.txtFilter);
-				//this.txtFilter.SelectAll();
-				//this.txtFilter.ReleaseMouseCapture();
-
 				Keyboard.Focus(this.txtFilter);
 			}, DispatcherPriority.Render);
 		}
 
 
-		void m_notifyIcon_Click(object sender, EventArgs e)
+		private void _notificationIcon_Click(object sender, EventArgs e)
 		{
-			Show();
+			this.ShowActivated = true;
+			this.Show();
 			WindowState = m_storedWindowState;
 		}
 
