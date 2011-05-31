@@ -59,8 +59,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GlobalAltTabHook.cs" />
-    <Compile Include="Window.cs" />
-    <Compile Include="WindowsEnumeration.cs" />
+    <Compile Include="Win32\GDI32.cs" />
+    <Compile Include="Win32\Kernel32.cs" />
+    <Compile Include="Win32\PSAPI.cs" />
+    <Compile Include="Win32\Shell32.cs" />
+    <Compile Include="Win32\User32.cs" />
+    <Compile Include="Win32\User32KeyboardHook.cs" />
+    <Compile Include="Domain\Window.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -69,7 +74,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IconUtilities.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -80,7 +84,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProcessView.cs" />
+    <Compile Include="Domain\ProcessView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

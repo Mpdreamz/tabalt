@@ -21,6 +21,8 @@ using System.Management;
 using System.ComponentModel;
 using System.Windows.Threading;
 using System.Threading;
+using TabAlt.Win32;
+using TabAlt.Domain;
 
 namespace TabAlt
 {
@@ -32,13 +34,14 @@ namespace TabAlt
 		private bool DeActivatedWhileSwitching { get; set; }
 		private System.Windows.Forms.NotifyIcon _notificationIcon;
 
-		ObservableCollection<ProcessView> _ProcessViewCollection = new ObservableCollection<ProcessView>();
-		public ObservableCollection<ProcessView> ProcessViewCollection { get { return _ProcessViewCollection; } }
+		IEnumerable<ProcessView> _ProcessViewCollection = new List<ProcessView>();
+		public IEnumerable<ProcessView> ProcessViewCollection { get { return _ProcessViewCollection; } }
 		public MainWindow()
 		{
-			GlobalAltTabHook.Hook(() =>
+			User32KeyboardHook.Hook(() =>
 			{
-				WindowsEnumeration.ActivateWindow("tabalt");
+				this.ListApplications();
+				User32.ActivateWindow("tabalt");
 				this.Show();
 				this.Activate();
 			});
@@ -56,31 +59,43 @@ namespace TabAlt
 
 		public void ListApplications()
 		{
+			
 			var processes = this.FilterApplication("");
-			foreach (var p in processes)
-			{
-				this._ProcessViewCollection.Add(p);
-			}
+			
+
+			var sw = new Stopwatch();
+			sw.Start();
+			var x = new ObservableCollection<ProcessView>();
+			sw.Stop();
+			var sw2 = new Stopwatch();
+			sw2.Start();
+			this._ProcessViewCollection = processes;
+			sw2.Stop();
 		}
 	
 		public IEnumerable<ProcessView> FilterApplication(string startsWith)
 		{
-			var windows =  WindowsEnumeration.GetShowableWindows();
-			
-			var visibleProcesses = from w in windows
-				where !string.IsNullOrEmpty(w.Title) && w.Process != null
-				let img = IconUtilities.LoadSmallIcon(w.Process.MainModule.FileName)
+
+			var windows = User32.GetShowableWindows();
+			var sw = new Stopwatch();
+			sw.Start();
+			var visibleProcesses = (from w in windows
+				where !string.IsNullOrEmpty(w.Title) //&& w.Process != null
+				//let fileName = w.Process.MainModule.FileName
+				let img = Shell32.LoadSmallIcon(w.ProcessName)
 				select
 					new ProcessView
 					{
-						Process = w.Process,
+						//Process = w.Process,
 						ImageSource = img,
-						ProcessName = w.Process.ProcessName,
+						ProcessPath = w.ProcessName,
+						ProcessName = System.IO.Path.GetFileName(w.ProcessName),
 						WindowTitle = w.Title,
-						CommittedMemory = w.Process.PrivateMemorySize64.ToString(),
+						//CommittedMemory = w.Process.PrivateMemorySize64.ToString(),
 						Window = w,
 
-					};
+					}).ToList();
+			sw.Stop();
 			return visibleProcesses;
 		}
 		[SuppressUnmanagedCodeSecurity]
@@ -128,7 +143,14 @@ namespace TabAlt
 			if (sel != null)
 			{
 				var p = (ProcessView)sel;
-				this.BigIcon.Source = System.Drawing.Icon.ExtractAssociatedIcon(p.Process.MainModule.FileName).ToImageSource();
+				try
+				{
+					this.BigIcon.Source = System.Drawing.Icon.ExtractAssociatedIcon(p.ProcessPath).ToImageSource();
+				}
+				catch
+				{
+				
+				}
 				
 			}
 		}
@@ -176,7 +198,7 @@ namespace TabAlt
 
 		void OnClose(object sender, CancelEventArgs args)
 		{
-			GlobalAltTabHook.UnHook();
+			User32KeyboardHook.UnHook();
 			this._notificationIcon.Visible = false;
 			this._notificationIcon.Dispose();
 			this._notificationIcon = null;

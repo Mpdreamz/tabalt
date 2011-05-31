@@ -41,6 +41,12 @@
                 </Border>
                 <ListView Height="auto" MaxHeight="200" ItemsSource="{Binding ProcessViewCollection}" Grid.Row="1" BorderBrush="{StaticResource WindowFrameBorderBrush}"
                           Name="lvApplications" Margin="3,-7,3,3" KeyDown="lvApplications_KeyDown" KeyUp="lvApplications_KeyUp">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VirtualizingStackPanel.IsVirtualizing="True">
+                            </VirtualizingStackPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
                     <ListView.View>
                         <GridView ColumnHeaderContainerStyle="{StaticResource GridHeader}">
                             <GridViewColumn Width="140" Header="Process">
