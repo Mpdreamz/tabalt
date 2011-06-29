@@ -59,7 +59,6 @@ namespace TabAlt
 
 		public void ListApplications()
 		{
-			
 			var processes = this.FilterApplication("");
 			
 
@@ -70,6 +69,8 @@ namespace TabAlt
 			var sw2 = new Stopwatch();
 			sw2.Start();
 			this._ProcessViewCollection = processes;
+			if (this.lvApplications != null)
+				this.lvApplications.ItemsSource = this._ProcessViewCollection;
 			sw2.Stop();
 		}
 	

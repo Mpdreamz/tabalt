@@ -25,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -59,13 +60,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GlobalAltTabHook.cs" />
+    <Compile Include="Win32\Enums\MemoryAllocationType.cs" />
+    <Compile Include="Win32\Enums\MemoryProtection.cs" />
+    <Compile Include="Win32\Enums\ProcessRights.cs" />
     <Compile Include="Win32\GDI32.cs" />
     <Compile Include="Win32\Kernel32.cs" />
     <Compile Include="Win32\PSAPI.cs" />
     <Compile Include="Win32\Shell32.cs" />
+    <Compile Include="Win32\Structs\TBBUTTON.cs" />
     <Compile Include="Win32\User32.cs" />
     <Compile Include="Win32\User32KeyboardHook.cs" />
     <Compile Include="Domain\Window.cs" />
+    <Compile Include="Win32\WindowStylesEx.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
