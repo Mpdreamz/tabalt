@@ -21,10 +21,11 @@ using System.Management;
 using System.ComponentModel;
 using System.Windows.Threading;
 using System.Threading;
-using TabAlt.Win32;
-using TabAlt.Domain;
+using Tabalt.Win32;
+using Tabalt.Domain;
+using System.Windows.Controls.Primitives;
 
-namespace TabAlt
+namespace Tabalt
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -34,20 +35,14 @@ namespace TabAlt
 		private bool DeActivatedWhileSwitching { get; set; }
 		private System.Windows.Forms.NotifyIcon _notificationIcon;
 
-		IEnumerable<ProcessView> _ProcessViewCollection = new List<ProcessView>();
-		public IEnumerable<ProcessView> ProcessViewCollection { get { return _ProcessViewCollection; } }
 		public MainWindow()
 		{
-			User32KeyboardHook.Hook(() =>
-			{
-				this.ListApplications();
-				User32.ActivateWindow("tabalt");
-				this.Show();
-				this.Activate();
-			});
-			this.ListApplications();
+			TabaltHooks.AltTabHook();
+			TabaltHooks.AltTabPressed += this.OnAltTabPressed;
+			TabaltHooks.ActivationRequested += this.OnActivationRequested;
+
 			InitializeComponent();
-			this.txtFilter.Focus();
+
 
 			this._notificationIcon = new System.Windows.Forms.NotifyIcon();
 			this._notificationIcon.Text = "tabalt - An alternative ALT TAB implementation";
@@ -59,124 +54,116 @@ namespace TabAlt
 
 		public void ListApplications()
 		{
-			var processes = this.FilterApplication("");
-			
-
-			var sw = new Stopwatch();
-			sw.Start();
-			var x = new ObservableCollection<ProcessView>();
-			sw.Stop();
-			var sw2 = new Stopwatch();
-			sw2.Start();
-			this._ProcessViewCollection = processes;
 			if (this.lvApplications != null)
-				this.lvApplications.ItemsSource = this._ProcessViewCollection;
-			sw2.Stop();
+				this.lvApplications.ItemsSource = ApplicationWindows.ApplicationRecords;
 		}
-	
-		public IEnumerable<ProcessView> FilterApplication(string startsWith)
+
+
+		private void OnAltTabPressed()
 		{
-
-			var windows = User32.GetShowableWindows();
-			var sw = new Stopwatch();
-			sw.Start();
-			var visibleProcesses = (from w in windows
-				where !string.IsNullOrEmpty(w.Title) //&& w.Process != null
-				//let fileName = w.Process.MainModule.FileName
-				let img = Shell32.LoadSmallIcon(w.ProcessName)
-				select
-					new ProcessView
-					{
-						//Process = w.Process,
-						ImageSource = img,
-						ProcessPath = w.ProcessName,
-						ProcessName = System.IO.Path.GetFileName(w.ProcessName),
-						WindowTitle = w.Title,
-						//CommittedMemory = w.Process.PrivateMemorySize64.ToString(),
-						Window = w,
-
-					}).ToList();
-			sw.Stop();
-			return visibleProcesses;
+			this.ListApplications();
 		}
-		[SuppressUnmanagedCodeSecurity]
-		internal static class UnsafeNativeMethods
+		private void OnActivationRequested()
 		{
-			[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-			internal static extern int GetWindowText(IntPtr hWnd, [Out] StringBuilder lpString, int nMaxCount);
-			[DllImport("user32.dll", SetLastError = true)]
-			internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-			[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-			internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
+			this.BringToFront();
 		}
+
+		private void BringToFront()
+		{
+			var window = ApplicationWindows.FindWindowByCaption("tabalt-unique-window-name");
+			if (window != null)
+				window.ActivateOnLastActiveScreen();
+			this.Show();
+			this.Activate();
+			this.txtFilter.Clear();
+			this.txtFilter.Focus();
+		}
+
 		private void Window_KeyUp(object sender, KeyEventArgs e)
 		{
-			this.KeyDown(e);	
+			this.IsSpecialKeyHandled(e);
 		}
 
-		private void textBox1_KeyUp(object sender, KeyEventArgs e)
+		private void txtFilter_KeyUp(object sender, KeyEventArgs e)
 		{
-			if (this.KeyDown(e))
+			if (this.IsSpecialKeyHandled(e))
 				return;
 
-			if (e.Key == Key.Up
-			|| e.Key == Key.Down)
+			if ((e.Key == Key.Up || e.Key == Key.Down) && lvApplications.Items.Count > 0)
 			{
-				KeyEventArgs e1 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, e.Key);
-				e1.RoutedEvent = Keyboard.KeyDownEvent;
-				this.lvApplications.RaiseEvent(e1);
+				this.FocusListView(() =>
+				{
+					if (e.Key == Key.Down)
+					{
+						lvApplications.SelectedIndex = Math.Min(lvApplications.Items.Count - 1, lvApplications.SelectedIndex + 1);
+					}
+					if (e.Key == Key.Up)
+					{
+						lvApplications.SelectedIndex = Math.Max(0, lvApplications.SelectedIndex - 1);
+					}
+					lvApplications.SelectedItem = lvApplications.Items[lvApplications.SelectedIndex];
+					if (lvApplications.SelectedItem != null)
+						((ListViewItem)lvApplications.ItemContainerGenerator.ContainerFromItem(lvApplications.SelectedItem)).Focus();
+				});
 				return;
 			}
-			this.lvApplications.Items.Filter = (o)=>
+			this.lvApplications.Items.Filter = (o) =>
 			{
-				var p = (ProcessView)o;
-
-				return Regex.IsMatch(p.ProcessName + " " + p.WindowTitle, @"\b"+txtFilter.Text, RegexOptions.IgnoreCase);
+				var p = (ApplicationRecord)o;
+				var text = string.Concat(p.ProcessName," ",p.WindowTitle," ",p.ProcessName);		
+				var regex = @"\b" + string.Join(".*?",txtFilter.Text.Split(new []{' '}).Select(t=> Regex.Escape(t)));
+				return Regex.IsMatch(text, regex, RegexOptions.IgnoreCase);
 			};
 
 
 			StringBuilder sb = new StringBuilder();
 
-			
-			this.lvApplications.SelectedIndex = 0;
+			this.lvApplications.SelectedIndex = (this.lvApplications.Items.Count > 1 && string.IsNullOrEmpty(this.txtFilter.Text)) ? 1 : 0;
+		
+			this.UpdateBigIconFromSelection();
+		}
+
+		private void UpdateBigIconFromSelection()
+		{
 			var sel = this.lvApplications.SelectedItem;
 			if (sel != null)
 			{
-				var p = (ProcessView)sel;
+				var p = (ApplicationRecord)sel;
 				try
 				{
 					this.BigIcon.Source = System.Drawing.Icon.ExtractAssociatedIcon(p.ProcessPath).ToImageSource();
 				}
 				catch
 				{
-				
+
 				}
-				
+			}
+			else
+			{ 
+				var	uriSource = new Uri(@"/Tabalt;component/logo.png", UriKind.Relative);
+				this.BigIcon.Source = new BitmapImage(uriSource);
 			}
 		}
 
+
+
 		private void lvApplications_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key != Key.Up
-			&& e.Key != Key.Down)
+			if (e.Key != Key.Up && e.Key != Key.Down)
 			{
-				//this.FocusInput();
-				KeyEventArgs e1 = new KeyEventArgs(Keyboard.PrimaryDevice, Keyboard.PrimaryDevice.ActiveSource, 0, e.Key);
-				e1.RoutedEvent = Keyboard.KeyDownEvent;
-				this.txtFilter.RaiseEvent(e1);
-				return;
+				this.FocusInput();
 			}
 		}
 
 		private void lvApplications_KeyUp(object sender, KeyEventArgs e)
 		{
-			this.KeyDown(e);
+			this.IsSpecialKeyHandled(e);
+			this.UpdateBigIconFromSelection();
 		}
 
-		private bool KeyDown(KeyEventArgs e)
+		private bool IsSpecialKeyHandled(KeyEventArgs e)
 		{
-			
+
 			if (e.Key == Key.Escape)
 			{
 				Hide();
@@ -188,7 +175,7 @@ namespace TabAlt
 				if (val != null)
 				{
 					DeActivatedWhileSwitching = true;
-					((ProcessView)val).Window.Activate();
+					((ApplicationRecord)val).Window.Activate();
 				}
 				Hide();
 				DeActivatedWhileSwitching = false;
@@ -214,36 +201,35 @@ namespace TabAlt
 			}
 			else
 				m_storedWindowState = WindowState;
-			FocusInputAndActivateWindow();
+			FocusInput();
 		}
 		void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs args)
 		{
 			if ((bool)args.NewValue)
 			{
 				this.Activate();
-				FocusInputAndActivateWindow();
+				FocusInput();
 			}
-		}
-		void FocusInputAndActivateWindow()
-		{
-			this.Dispatcher.BeginInvoke((Action)delegate
-				{
-					//var b = this.Activate();
-					//while (!this.IsActive) this.Activate();				
-					
-					this.txtFilter.Focus();
-					this.txtFilter.SelectAll();
-					this.txtFilter.ReleaseMouseCapture();
-
-					Keyboard.Focus(this.txtFilter);
-				}, DispatcherPriority.Render);
 		}
 		void FocusInput()
 		{
 			this.Dispatcher.BeginInvoke((Action)delegate
+				{
+					this.txtFilter.Focus();
+					this.txtFilter.ReleaseMouseCapture();
+					if (this.txtFilter.Text.Length == 0)
+						this.txtFilter.Select(Math.Max((this.txtFilter.Text ?? string.Empty).Length - 1, 0), 0);
+					Keyboard.Focus(this.txtFilter);
+				}, DispatcherPriority.Render);
+		}
+		void FocusListView(Action afterFocus)
+		{
+			this.Dispatcher.BeginInvoke((Action)delegate
 			{
-				this.txtFilter.Focus();
-				Keyboard.Focus(this.txtFilter);
+				this.lvApplications.Focus();
+				Keyboard.Focus(this.lvApplications);
+				if (afterFocus != null)
+					afterFocus();
 			}, DispatcherPriority.Render);
 		}
 
@@ -257,7 +243,7 @@ namespace TabAlt
 
 		private void Window_Activated(object sender, EventArgs e)
 		{
-			this.FocusInputAndActivateWindow();
+			this.FocusInput();
 		}
 
 		private void Window_Deactivated(object sender, EventArgs e)

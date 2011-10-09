@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TabAlt.Win32.Enums
+namespace Tabalt.Win32.Enums
 {
 	internal class MemoryProtection
 	  {

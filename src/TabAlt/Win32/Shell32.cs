@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 
-namespace TabAlt.Win32
+namespace Tabalt.Win32
 {
 	public static class Shell32
 	{

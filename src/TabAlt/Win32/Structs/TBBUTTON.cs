@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace TabAlt.Win32.Structs
+namespace Tabalt.Win32.Structs
 {
 	//many thanks to Paul Accisano for finding out  the nitty grtty on this struct.
 	//http://stackoverflow.com/questions/5495981/how-do-i-define-the-tbbutton-struct-in-c/5518286

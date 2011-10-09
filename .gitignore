@@ -3,3 +3,11 @@
 /src/TabAlt/obj
 /src/Test/bin
 /src/Test/obj
+/bin
+/src/TabAlt.crunchsolution.cache
+/src/TabAlt.sln.docstates
+/src/TabAlt.sln.docstates.suo
+/src/Tabalt.Setup/Debug
+/src/Tabalt.Setup/Release
+/src/Tabalt.Setup - x86/Debug
+/src/Tabalt.Setup - x86/Release

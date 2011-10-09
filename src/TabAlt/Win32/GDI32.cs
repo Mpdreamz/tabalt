@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.ComponentModel;
 
-namespace TabAlt.Win32
+namespace Tabalt.Win32
 {
 	public static class GDI32
 	{

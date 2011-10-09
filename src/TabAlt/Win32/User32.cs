@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
-using TabAlt.Domain;
+using Tabalt.Domain;
 using System.Diagnostics;
-using TabAlt.Win32.Enums;
+using Tabalt.Win32.Enums;
 using System.Drawing;
-using TabAlt.Win32.Structs;
+using Tabalt.Win32.Structs;
 
-namespace TabAlt.Win32
+namespace Tabalt.Win32
 {
 	public static class User32
 	{
@@ -72,6 +72,8 @@ namespace TabAlt.Win32
 		[DllImport("user32.dll")]
 		public static extern bool IsZoomed(IntPtr hWnd);
 
+		[DllImport("user32.dll")]
+		static extern IntPtr GetShellWindow();
 
 		[DllImport("user32.dll")]
 		public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
@@ -88,81 +90,33 @@ namespace TabAlt.Win32
 
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+		public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
 		[return: MarshalAs(UnmanagedType.Bool)]
 		[DllImport("user32.dll", SetLastError = true)]
-		private static extern bool GetWindowInfo(IntPtr hwnd, ref WINDOWINFO pwi);
+		public static extern bool GetWindowInfo(IntPtr hwnd, ref WINDOWINFO pwi);
 
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		public static extern int MapWindowPoints(IntPtr hWndFrom, IntPtr hWndTo, ref RECT lpPoints, UInt32 cPoints);
 
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetLastActivePopup(IntPtr hWnd);
 
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct RECT
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestor_Flags gaFlags);
+		public enum GetAncestor_Flags
 		{
-			public int Left;        // x position of upper-left corner
-			public int Top;         // y position of upper-left corner
-			public int Right;       // x position of lower-right corner
-			public int Bottom;      // y position of lower-right corner
-
-
-			public int Height { get { return Bottom - Top; } }
-			public int Width { get { return Right - Left; } }
-			public Size Size { get { return new Size(Width, Height); } }
-
-			public RECT(int left, int top, int right, int bottom)
-			{
-				Left = left;
-				Top = top;
-				Right = right;
-				Bottom = bottom;
-			}
-
+			GetParent = 1,
+			GetRoot = 2,
+			GetRootOwner = 3
 		}
-		public struct WINDOWINFO
-		{
-			public uint cbSize;
-			public RECT rcWindow;
-			public RECT rcClient;
-			public uint dwStyle;
-			public WindowStylesEx dwExStyle;
-			public uint dwWindowStatus;
-			public uint cxWindowBorders;
-			public uint cyWindowBorders;
-			public ushort atomWindowType;
-			public ushort wCreatorVersion;
-
-			public WINDOWINFO(Boolean? filler)
-				: this()
-			{
-				cbSize = (UInt32)(Marshal.SizeOf(typeof(WINDOWINFO)));
-			}
-		}
-		public enum WindowState
-		{
-			SW_HIDE = 0,
-			SW_SHOWNORMAL = 1,
-			SW_SHOWMINIMIZED = 2,
-			SW_SHOWMAXIMIZED = 3,
-			SW_SHOWNOACTIVATE = 4,
-			SW_SHOW = 5,
-			SW_MINIMIZE = 6,
-			SW_SHOWMINNOACTIVE = 7,
-			SW_SHOWNA = 8,
-			SW_RESTORE = 9,
-			SW_SHOWDEFAULT = 10
-		}
-		public struct WINDOWPLACEMENT
-		{
-			public int length;
-			public int flags;
-			public int showCmd;
-			public System.Drawing.Point ptMinPosition;
-			public System.Drawing.Point ptMaxPosition;
-			public System.Drawing.Rectangle rcNormalPosition;
-		}
+		
+		
+		
+		
 		internal class WM
 		{
 			public const uint CLOSE = 0x0010;
@@ -180,63 +134,10 @@ namespace TabAlt.Win32
 			public const uint GETBUTTONTEXTA = WM.USER + 45;
 			public const uint GETBUTTONTEXTW = WM.USER + 75;
 			public const uint WM_LBUTTONDBLCLK = 0x0203;
-			public const uint TB_PRESSBUTTON = (WM.USER + 3);
-		}
-		private static IntPtr SystrayHwnd =
-			User32.FindWindowEx(User32.FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null);
-
-
-		private static IntPtr GetNotificationToolbarWindowHandle()
-		{
-			IntPtr hShell = User32.FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
-			IntPtr hTray = User32.FindWindowEx(hShell, IntPtr.Zero, "TrayNotifyWnd", null);
-			IntPtr hPager = User32.FindWindowEx(hTray, IntPtr.Zero, "SysPager", null);
-			IntPtr hToolbar = User32.FindWindowEx(hPager, IntPtr.Zero, "ToolbarWindow32", null);
-			return hToolbar;
-
-		}
-		
-		public static IEnumerable<ShowableWindow> ListSystrayProcesses()
-		{
-
-			var pInt = User32.GetNotificationToolbarWindowHandle();
-			if (pInt == IntPtr.Zero) return null;
-			var hash = new HashSet<IntPtr>();
-			var list = new List<ShowableWindow>();
-
-			int count = (int)User32.SendMessage(pInt, TB.BUTTONCOUNT, IntPtr.Zero, IntPtr.Zero);
-
-			for (int i = 0; i < count; i++)
-			{
-				TBBUTTON tbButton = new TBBUTTON();
-				string text = String.Empty;
-				IntPtr ipWindowHandle = IntPtr.Zero;
-
-				NotificationAreaWindow notificationAreaWindow;
-				bool b = GetTBButton(pInt, i, ref tbButton, ref text, ref ipWindowHandle, out notificationAreaWindow);
-				if (!b)
-					continue;
-				if (hash.Contains(notificationAreaWindow.MainWindowHandle))
-					continue;
-				hash.Add(notificationAreaWindow.MainWindowHandle);	
-
-				uint processId = 0;
-				User32.GetWindowThreadProcessId(notificationAreaWindow.MainWindowHandle, out processId);
-				if (processId == 0)
-					continue;
-				if (processId == App.ProcessId)
-					continue;
-				var fileName = User32.GetWindowModuleFileNameFromHandle(notificationAreaWindow.MainWindowHandle);
-				if (fileName.ToLower().EndsWith("explorer.exe"))
-					continue;
-
-				var window = new ShowableWindow((int)processId, fileName,	notificationAreaWindow);
-				list.Add(window);
-
-
-			}
-			return list;
-			//          User32.SendMessage( hToolbar, TB.CUSTOMIZE, IntPtr.Zero, IntPtr.Zero );
+			public const uint PRESSBUTTON = (WM.USER + 3);
+			public const uint HIDEBUTTON = (WM.USER + 4);
+			public const uint GETITEMRECT = (WM.USER + 29);
+			public const uint STATE_HIDDEN = 0x08;
 		}
 		public class NotificationAreaWindow
 		{
@@ -246,13 +147,53 @@ namespace TabAlt.Win32
 			public IntPtr ToolBarIconHandle { get; set; }
 			public string Text { get; set; }
 		}
+		private static IntPtr SystrayHwnd =	User32.FindWindowEx(User32.FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null);
 
-		const uint WM_USER = 1024;
-		const uint TB_HIDEBUTTON = (WM_USER + 4);
-		const uint TB_BUTTONCOUNT = (WM_USER + 24);
-		const uint TB_GETBUTTON = (WM_USER + 23);
-		const uint TB_GETITEMRECT = (WM_USER + 29);
-		const uint TBSTATE_HIDDEN = 0x08;
+
+		public static IntPtr GetNotificationToolbarWindowHandle()
+		{
+			IntPtr hShell = User32.FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
+			IntPtr hTray = User32.FindWindowEx(hShell, IntPtr.Zero, "TrayNotifyWnd", null);
+			IntPtr hPager = User32.FindWindowEx(hTray, IntPtr.Zero, "SysPager", null);
+			IntPtr hToolbar = User32.FindWindowEx(hPager, IntPtr.Zero, "ToolbarWindow32", null);
+			return hToolbar;
+
+		}
+		public static int GetButtonCount(IntPtr hwnd)
+		{
+			return (int)User32.SendMessage(hwnd, TB.BUTTONCOUNT, IntPtr.Zero, IntPtr.Zero);
+		}
+		public static ApplicationWindow GetNthApplicationWindowOnNotificationArea(IntPtr notificationAreaHwnd, int i)
+		{
+			TBBUTTON tbButton = new TBBUTTON();
+			string text = String.Empty;
+			IntPtr ipWindowHandle = IntPtr.Zero;
+
+			NotificationAreaWindow notificationAreaWindow;
+			bool b = User32.GetTBButton(notificationAreaHwnd, i, ref tbButton, ref text, ref ipWindowHandle, out notificationAreaWindow);
+			if (!b)
+				return null;
+
+			//if (!User32.KeepWindowHandleInAltTabList(notificationAreaWindow.MainWindowHandle))
+				//return null;
+			/*if (hash.Contains(notificationAreaWindow.MainWindowHandle))
+				return null;
+			hash.Add(notificationAreaWindow.MainWindowHandle);*/
+
+			uint processId = 0;
+			User32.GetWindowThreadProcessId(notificationAreaWindow.MainWindowHandle, out processId);
+			if (processId == 0)
+				return null;
+			if (processId == App.ProcessId)
+				return null;
+			var fileName = User32.GetWindowModuleFileNameFromHandle(notificationAreaWindow.MainWindowHandle);
+			if (fileName.ToLower().EndsWith("explorer.exe"))
+				return null;
+
+			var window = new ApplicationWindow((int)processId, fileName, notificationAreaWindow);
+			return window;
+		}
+		
 		const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
 		const uint MEM_COMMIT = 0x1000;
 		const uint MEM_RELEASE = 0x8000;
@@ -262,7 +203,7 @@ namespace TabAlt.Win32
 		{
 			RECT rct;
 			Rectangle myRect = new Rectangle();
-			if (!GetWindowRect(new HandleRef(new object{}, hwnd), out rct))
+			if (!GetWindowRect(new HandleRef(new object { }, hwnd), out rct))
 			{
 				return rct;
 			}
@@ -275,7 +216,7 @@ namespace TabAlt.Win32
 			return rct;
 		}
 
-		private static unsafe bool GetTBButton(IntPtr hToolbar, int i, ref TBBUTTON tbButton, ref string text, ref IntPtr ipWindowHandle, out NotificationAreaWindow notificationAreaWindow)
+		public static unsafe bool GetTBButton(IntPtr hToolbar, int i, ref TBBUTTON tbButton, ref string text, ref IntPtr ipWindowHandle, out NotificationAreaWindow notificationAreaWindow)
 		{
 			notificationAreaWindow = new NotificationAreaWindow();
 			// One page
@@ -373,7 +314,7 @@ namespace TabAlt.Win32
 			}
 
 
-			var rect = default(TabAlt.Win32.User32.RECT);
+			var rect = default(RECT);
 			uint dwTrayProcessID = 0;
 			GetWindowThreadProcessId(hToolbar, out dwTrayProcessID);
 			if (dwTrayProcessID <= 0) { return false; }
@@ -389,8 +330,8 @@ namespace TabAlt.Win32
 			var rectNotifyIcon = new RECT(0, 0, 0, 0);
 			byte[] byteBuffer3 = new byte[Marshal.SizeOf(rectNotifyIcon.GetType())];
 
-			SendMessage(hToolbar, TB_GETITEMRECT, tbButton.idCommand, lpData);
-			Kernel32.ReadProcessMemory(hTrayProc, lpData, byteBuffer3, Marshal.SizeOf(rectNotifyIcon.GetType()),	out dwBytesRead2);
+			SendMessage(hToolbar, TB.GETITEMRECT, tbButton.idCommand, lpData);
+			Kernel32.ReadProcessMemory(hTrayProc, lpData, byteBuffer3, Marshal.SizeOf(rectNotifyIcon.GetType()), out dwBytesRead2);
 			if (dwBytesRead2 < Marshal.SizeOf(rectNotifyIcon.GetType())) { return false; }
 
 			IntPtr ptrOut2 = Marshal.AllocHGlobal(Marshal.SizeOf(rectNotifyIcon.GetType()));
@@ -409,8 +350,8 @@ namespace TabAlt.Win32
 			Kernel32.VirtualFreeEx(hTrayProc, lpData, UIntPtr.Zero, MEM_RELEASE);
 			Kernel32.CloseHandle(hTrayProc);
 			rect = new RECT(
-				rectNotifyIcon.Left - c.Left, 
-				rectNotifyIcon.Top - c.Top, 
+				rectNotifyIcon.Left - c.Left,
+				rectNotifyIcon.Top - c.Top,
 				rectNotifyIcon.Right - c.Right,
 				(rectNotifyIcon.Bottom - c.Bottom) + rectNotifyIcon.Height);
 
@@ -432,6 +373,7 @@ namespace TabAlt.Win32
 			};
 			return true;
 		}
+	
 		public static string GetWindowModuleFileNameFromHandle(IntPtr hWnd)
 		{
 			var r = string.Empty;
@@ -447,85 +389,61 @@ namespace TabAlt.Win32
 				r = "C" + r.Substring(1, r.Length - 1);
 			return r;
 		}
-		public static IEnumerable<ShowableWindow> EnumerateWindows()
+		
+		public static string GetClassNameFromHwnd(IntPtr hwnd)
 		{
-			return User32.EnumerateWindows(null);
+			int nRet;
+			StringBuilder className = new StringBuilder(256);
+			//Get the window class name
+			nRet = GetClassName(hwnd, className, className.Capacity);
+			return (nRet != 0) ? className.ToString() : string.Empty;
 		}
-		public static IEnumerable<ShowableWindow> EnumerateWindows(int? matchProcessId)
+
+		public static bool KeepWindowHandleInAltTabList(IntPtr window)
 		{
-			var windows = new List<ShowableWindow>();
-			Func<int, int, bool> filter = (hWnd, lParam) =>
+			if (window == User32.GetShellWindow())   //Desktop
+				return false;
+
+			//http://stackoverflow.com/questions/210504/enumerate-windows-like-alt-tab-does
+			//http://blogs.msdn.com/oldnewthing/archive/2007/10/08/5351207.aspx
+			//1. For each visible window, walk up its owner chain until you find the root owner. 
+			//2. Then walk back down the visible last active popup chain until you find a visible window.
+			//3. If you're back to where you're started, (look for exceptions) then put the window in the Alt+Tab list.
+			IntPtr root = User32.GetAncestor(window, User32.GetAncestor_Flags.GetRootOwner);
+
+			if (GetLastVisibleActivePopUpOfWindow(root) == window)
 			{
-				var iHwnd = new IntPtr(hWnd);
-				StringBuilder title = new StringBuilder(256);
-				User32.GetWindowText(hWnd, title, 256);
-				var fileName = User32.GetWindowModuleFileNameFromHandle(iHwnd);
-				if (title.Length == 0)
-					return true;
+				var className = User32.GetClassNameFromHwnd(window);
 
-				var parentHwnd = User32.GetParent(iHwnd);
-
-				if (!parentHwnd.Equals(new IntPtr(0)))
-					return true;
-
-				if (!User32.IsWindowVisible(hWnd) && !matchProcessId.HasValue)
-				{
-					var placement = new WINDOWPLACEMENT();
-					User32.GetWindowPlacement(iHwnd, ref placement);
-					WINDOWINFO info = new WINDOWINFO();
-					info.cbSize = (uint)Marshal.SizeOf(info);
-					User32.GetWindowInfo(iHwnd, ref info);
-					if (!User32.IsIconic(iHwnd)
-						&& placement.flags == 0)
-					{
-						return true;
-					}
-				}
-				uint processId = 0;
-				User32.GetWindowThreadProcessId(iHwnd, out processId);
-				var window = new ShowableWindow(title.ToString(), iHwnd, (int)processId, fileName);
-				windows.Add(window);
-				if (matchProcessId.HasValue && processId == matchProcessId.Value)
+				if (className == "Shell_TrayWnd" ||                          //Windows taskbar
+					className == "DV2ControlHost" ||                         //Windows startmenu, if open
+					//(className == "Button" && windowText == "Start") ||   //Windows startmenu-button.
+					className == "MsgrIMEWindowClass" ||                     //Live messenger's notifybox i think
+					className == "SysShadow" ||                              //Live messenger's shadow-hack
+					className.StartsWith("WMP9MediaBarFlyout"))              //WMP's "now playing" taskbar-toolbar
 					return false;
+
 				return true;
-			};
-			var ewp = new User32.EnumWindowsProc(filter);
-			foreach (var window in User32.ListSystrayProcesses())
-			{
-			;
-				windows.Add(window);
 			}
-			
-			User32.EnumWindows(ewp, 0);
-			
-			return windows.DistinctBy(w=>w.hWnd).DistinctBy(w=>w.ProcessId);
-		}
-		public static IEnumerable<ShowableWindow> GetShowableWindows()
-		{
-			var windows = User32.EnumerateWindows();
-			return windows;
+			return false;
 		}
 
-		public static void ActivateWindow(string name)
+		public static IntPtr GetLastVisibleActivePopUpOfWindow(IntPtr window)
 		{
-			//looping through enumerate windows is faster and more reliable then calling Process.GetCurrentProcess().MainModuleWindowHanlde
-			//go figure
-			var window = User32.EnumerateWindows(App.ProcessId).FirstOrDefault();
-			if (window != null)
-				window.ActiveOnLastActiveScreen();
+			IntPtr lastPopUp = User32.GetLastActivePopup(window);
+			if (User32.IsWindowVisible((int)lastPopUp))
+				return lastPopUp;
+			else if (lastPopUp == window)
+				return IntPtr.Zero;
+			else
+				return GetLastVisibleActivePopUpOfWindow(lastPopUp);
 		}
-		public static IEnumerable<TSource> DistinctBy<TSource, TKey>
-	 (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-		{
-			HashSet<TKey> knownKeys = new HashSet<TKey>();
-			foreach (TSource element in source)
-			{
-				if (knownKeys.Add(keySelector(element)))
-				{
-					yield return element;
-				}
-			}
-		}
+
+
+
+	
+		
+		
 
 	}
 }

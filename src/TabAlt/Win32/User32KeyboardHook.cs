@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace TabAlt.Win32
+namespace Tabalt.Win32
 {
 	public static class User32KeyboardHook
 	{

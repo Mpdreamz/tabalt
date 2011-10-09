@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Interop;
 using System.Diagnostics;
 
-namespace TabAlt
+namespace Tabalt
 {
 	/// <summary>
 	/// Interaction logic for App.xaml
