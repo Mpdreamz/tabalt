@@ -27,7 +27,7 @@ Albacore.configure do |config|
 end
 
 desc "Compiles solution and runs unit tests"
-task :default => [:clean, :version, :prepare_setups, :setupx86, :setupx64, :publish]
+task :default => [:clean, :version, :prepare_setups, :setupx86, :setupx64, :publish, :addlauchoptionx64, :addlauchoptionx86]
 
 #Add the folders that should be cleaned as part of the clean task
 CLEAN.include(OUTPUT)
@@ -42,21 +42,6 @@ assemblyinfo :version => [:clean] do |asm|
     asm.description = "An alternative alt tab implementation for power users"
     asm.copyright = "Copyright (C) Martijn Laarman and contributors"
     asm.output_file = SHARED_ASSEMBLY_INFO
-end
-
-
-desc "Compile solution file"
-msbuild :compile => [:version] do |msb|
-    msb.properties :configuration => CONFIGURATION, :Platform => "x64"
-    msb.targets :Clean, :Build
-    msb.solution = SOLUTION_FILE
-end
-
-desc "Compile solution file"
-msbuild :compile_x86 => [:version] do |msb|
-    msb.properties :configuration => CONFIGURATION, :Platform => "x86"
-    msb.targets :Clean, :Build
-    msb.solution = SOLUTION_FILE
 end
 
 task :prepare_setups do 
@@ -81,30 +66,25 @@ exec :setupx86 do |cmd|
     cmd.parameters = "#{SOLUTION_FILE} /rebuild \"Release|x86\""
 end
 
+exec :addlauchoptionx64 do |cmd|
+    cmd.command = "cscript"
+    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x64.msi\""
+end
 
+exec :addlauchoptionx86 do |cmd|
+    cmd.command = "cscript"
+    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x86.msi\""
+end
 
 desc "Gathers output files and copies them to the output folder"
-task :publish => [:compile] do
+task :publish do
     Dir.mkdir(OUTPUT)
     FileUtils.mv("src/Tabalt.Setup/Release/Tabalt.Setup.msi", "#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x64.msi")
     FileUtils.mv("src/Tabalt.Setup - x86/Release/Tabalt.Setup.msi", "#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x86.msi")
+
+    
+
 end
-
-desc "Executes MSpec tests"
-mspec :mspec => [:compile] do |mspec|
-    #This is a bit fragile but this is the only mspec assembly at present. 
-    #Fails if passed a FileList of all tests. Need to investigate.
-    mspec.command = "tools/mspec/mspec.exe"
-    mspec.assemblies "src/Nancy.Tests/bin/Release/Nancy.Tests.dll"
-end
-
-desc "Executes xUnit tests"
-xunit :xunit => [:compile] do |xunit|
-    tests = FileList["src/**/#{CONFIGURATION}/*.Tests.dll"].exclude(/obj\//)
-
-    xunit.command = "tools/xunit/xunit.console.clr4.x86.exe"
-    xunit.assemblies = tests
-end 
 
 
 #TODO:

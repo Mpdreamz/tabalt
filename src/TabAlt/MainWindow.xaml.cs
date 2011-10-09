@@ -34,6 +34,8 @@ namespace Tabalt
 	{
 		private bool DeActivatedWhileSwitching { get; set; }
 		private System.Windows.Forms.NotifyIcon _notificationIcon;
+		private System.Windows.Forms.ContextMenu _notificationMenu;
+
 
 		public MainWindow()
 		{
@@ -44,10 +46,15 @@ namespace Tabalt
 			InitializeComponent();
 
 
+			this._notificationMenu = new System.Windows.Forms.ContextMenu();
+			var exitMenuItem = new System.Windows.Forms.MenuItem("&Quit", (s, e)=> Application.Current.Shutdown());
+			this._notificationMenu.MenuItems.Add(exitMenuItem);
+
 			this._notificationIcon = new System.Windows.Forms.NotifyIcon();
 			this._notificationIcon.Text = "tabalt - An alternative ALT TAB implementation";
 			this._notificationIcon.Icon = new System.Drawing.Icon("logo.ico");
 			this._notificationIcon.Click += new EventHandler(_notificationIcon_Click);
+			this._notificationIcon.ContextMenu = this._notificationMenu;
 			this._notificationIcon.Visible = true;
 
 		}
@@ -55,7 +62,11 @@ namespace Tabalt
 		public void ListApplications()
 		{
 			if (this.lvApplications != null)
+			{ 
 				this.lvApplications.ItemsSource = ApplicationWindows.ApplicationRecords;
+				this.lvApplications.Width = this.lvApplications.Width + 1;
+				this.lvApplications.Width = this.lvApplications.Width - 1;
+			}
 		}
 
 
@@ -70,18 +81,19 @@ namespace Tabalt
 
 		private void BringToFront()
 		{
-			var window = ApplicationWindows.FindWindowByCaption("tabalt-unique-window-name");
+			var window = ApplicationWindows.FindWindowByCaption("tabalt-unique-window-name-xblah");
 			if (window != null)
 				window.ActivateOnLastActiveScreen();
 			this.Show();
 			this.Activate();
 			this.txtFilter.Clear();
 			this.txtFilter.Focus();
+			this.FocusInput();
 		}
 
 		private void Window_KeyUp(object sender, KeyEventArgs e)
 		{
-			this.IsSpecialKeyHandled(e);
+			this.IsSpecialKeyHandled(e, true);
 		}
 
 		private void txtFilter_KeyUp(object sender, KeyEventArgs e)
@@ -149,6 +161,9 @@ namespace Tabalt
 
 		private void lvApplications_KeyDown(object sender, KeyEventArgs e)
 		{
+			if (Keyboard.Modifiers != ModifierKeys.None)
+				return;
+
 			if (e.Key != Key.Up && e.Key != Key.Down)
 			{
 				this.FocusInput();
@@ -161,21 +176,38 @@ namespace Tabalt
 			this.UpdateBigIconFromSelection();
 		}
 
-		private bool IsSpecialKeyHandled(KeyEventArgs e)
+		private bool IsSpecialKeyHandled(KeyEventArgs e, bool keyUp = false)
 		{
+
+			if (keyUp && e.Key == Key.K && Keyboard.Modifiers == ModifierKeys.Control)
+			{
+				if (this.lvApplications.SelectedItems == null)
+					return true;
+				foreach (var item in this.lvApplications.SelectedItems)
+				{
+					((ListViewItem)lvApplications.ItemContainerGenerator.ContainerFromItem(item)).Visibility = System.Windows.Visibility.Hidden;
+					((ApplicationRecord)item).Window.Close();
+				}
+				this.ListApplications();
+				this.lvApplications.SelectedIndex = 0;
+				return true;
+			}
 
 			if (e.Key == Key.Escape)
 			{
 				Hide();
 				return true;
 			}
-			if (e.Key == Key.Enter)
+			if (e.Key == Key.Enter && keyUp)
 			{
 				var val = this.lvApplications.SelectedValue;
 				if (val != null)
 				{
 					DeActivatedWhileSwitching = true;
-					((ApplicationRecord)val).Window.Activate();
+					if (Keyboard.Modifiers == ModifierKeys.Control)
+						((ApplicationRecord)val).Window.StartNewInstance();
+					else
+						((ApplicationRecord)val).Window.Activate();
 				}
 				Hide();
 				DeActivatedWhileSwitching = false;
@@ -236,9 +268,8 @@ namespace Tabalt
 
 		private void _notificationIcon_Click(object sender, EventArgs e)
 		{
-			this.ShowActivated = true;
-			this.Show();
-			WindowState = m_storedWindowState;
+			this.ListApplications();
+			this.BringToFront();
 		}
 
 		private void Window_Activated(object sender, EventArgs e)

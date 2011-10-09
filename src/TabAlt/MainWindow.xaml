@@ -1,7 +1,8 @@
 ﻿<Window x:Class="Tabalt.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="tabalt-unique-window-name" Height="auto" Width="653" MinHeight="64" MaxHeight="600"
+        
+        Title="tabalt-unique-window-name-xblah" Height="auto" Width="653" MinHeight="64" MaxHeight="600"
         WindowStyle="None" ShowInTaskbar="False" AllowsTransparency="True" Topmost="true"
         Background="Transparent" WindowStartupLocation="CenterScreen" KeyUp="Window_KeyUp"
         DataContext="{Binding RelativeSource={RelativeSource Self}}" Visibility="Hidden"
@@ -14,7 +15,7 @@
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-</Window.Resources>
+    </Window.Resources>
     
 
     <Grid>
@@ -49,19 +50,31 @@
                     </ListView.ItemsPanel>
                     <ListView.View>
                         <GridView ColumnHeaderContainerStyle="{StaticResource GridHeader}">
-                            <GridViewColumn Width="140" Header="Process">
+                            <GridViewColumn Header="Process name" Width="120">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <!--use a panel to hold the icon-->
-                                        <StackPanel Orientation="Horizontal">
+                                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch">
                                             <Image Margin="1,1,1,1" Source="{Binding Path=ImageSource}"  />
                                             <TextBlock Margin="1,1,1,1" Text="{Binding Path=ProcessName}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="140" Header="WindowSize"  DisplayMemberBinding="{Binding WindowTitle}" />
-                            <GridViewColumn Width="140" Header="Commit Size" DisplayMemberBinding="{Binding CommittedMemory}" />
+                            <GridViewColumn Header="Caption" Width="420">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding WindowTitle}" TextAlignment="Left" HorizontalAlignment="Stretch"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Memory" Width="80">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding CommittedMemory}" TextAlignment="Right" HorizontalAlignment="Stretch"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                             
                         </GridView>
                     </ListView.View>

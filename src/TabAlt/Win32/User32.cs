@@ -115,8 +115,6 @@ namespace Tabalt.Win32
 		}
 		
 		
-		
-		
 		internal class WM
 		{
 			public const uint CLOSE = 0x0010;

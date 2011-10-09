@@ -17,6 +17,10 @@
     </LinearGradientBrush>
     <SolidColorBrush  x:Key="EntryBorderBrush" Color="Transparent" />
 
+    <Style TargetType="ListViewItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    
     <Style x:Key="GridHeader" TargetType="{x:Type GridViewColumnHeader}">
         <Setter Property="Template">
             <Setter.Value>
