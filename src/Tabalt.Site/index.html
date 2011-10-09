@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<title>Tabalt</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+	</head>
+	<body>
+		<div id="download_logo_bar">
+			<div id="download_nojs">
+				<a href="download/Tabalt-0.0.1-setup-x64.msi">Download 64bits Windows</a>
+				<a href="download/Tabalt-0.0.1-setup-x86.msi">Download 32bits Windows</a>
+			</div>
+			<div id="download_x64">
+				<a href="download/Tabalt-0.0.1-setup-x64.msi">
+					<img src="downloadx64.jpg">
+				</a>
+			</div>
+			<div id="download_x86">
+				<a href="download/Tabalt-0.0.1-setup-x64.msi">
+					<img src="downloadx86.jpg">
+				</a>
+			</div>
+
+		</div>
+		<script type="text/javascript">
+			document.getElementById("download_nojs").style.display = "none";
+			if (navigator.userAgent.indexOf("x64") > 0 || navigator.userAgent.indexOf("WOW64") > 0)
+				document.getElementById("download_x64").style.display = "block";
+			else
+				document.getElementById("download_x86").style.display = "block";
+		</script>
+	</body>
+</html>
