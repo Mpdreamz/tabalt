@@ -97,7 +97,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="obj\Domain\ApplicationWindows.cs" />
+    <Compile Include="Domain\ApplicationWindows.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Tabalt.cs" />
     <Compile Include="Win32\Enums\WindowState.cs" />
@@ -114,7 +114,7 @@
     <Compile Include="Win32\Structs\TBBUTTON.cs" />
     <Compile Include="Win32\User32.cs" />
     <Compile Include="Win32\User32KeyboardHook.cs" />
-    <Compile Include="obj\Domain\ApplicationWindow.cs" />
+    <Compile Include="Domain\ApplicationWindow.cs" />
     <Compile Include="Win32\WindowStylesEx.cs" />
     <Compile Include="WPF\Behaviours\GridViewColumnResize.cs" />
     <Page Include="MainWindow.xaml">
@@ -135,7 +135,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="obj\Domain\ApplicationRecord.cs" />
+    <Compile Include="Domain\ApplicationRecord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
