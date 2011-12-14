@@ -232,8 +232,8 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Tabalt"
-        "ProductCode" = "8:{C92E2670-4B58-43DE-82EF-EE53855E117F}"
-        "PackageCode" = "8:{2441171A-FF3F-4720-A455-4F6399239178}"
+        "ProductCode" = "8:{41C91431-5C0A-4541-9FFF-A8B87B535341}"
+        "PackageCode" = "8:{003901AC-C584-4BE5-9F93-2E0F58E813B1}"
         "UpgradeCode" = "8:{FF7407AA-1F57-4E0F-99E1-8D1593A3F837}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

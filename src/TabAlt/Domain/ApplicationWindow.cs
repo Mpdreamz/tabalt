@@ -183,6 +183,16 @@ namespace Tabalt.Domain
 				else
 					User32.ShowWindowAsync(hWnd, (int)WindowState.SW_SHOWNORMAL);
 			}
+      if (ThreadID1 != ThreadID2)
+      {
+        User32.AttachThreadInput(ThreadID1, ThreadID2, 1);
+        User32.SetForegroundWindow(hWnd);
+        User32.AttachThreadInput(ThreadID1, ThreadID2, 0);
+      }
+      else
+      {
+        User32.SetForegroundWindow(hWnd);
+      }
 
 		}
 

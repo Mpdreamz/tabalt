@@ -24,6 +24,7 @@ using System.Threading;
 using Tabalt.Win32;
 using Tabalt.Domain;
 using System.Windows.Controls.Primitives;
+using System.Reflection;
 
 namespace Tabalt
 {
@@ -45,14 +46,16 @@ namespace Tabalt
 
 			InitializeComponent();
 
-
 			this._notificationMenu = new System.Windows.Forms.ContextMenu();
 			var exitMenuItem = new System.Windows.Forms.MenuItem("&Quit", (s, e)=> Application.Current.Shutdown());
 			this._notificationMenu.MenuItems.Add(exitMenuItem);
 
 			this._notificationIcon = new System.Windows.Forms.NotifyIcon();
 			this._notificationIcon.Text = "tabalt - An alternative ALT TAB implementation";
-			this._notificationIcon.Icon = new System.Drawing.Icon("logo.ico");
+			var x = Assembly.GetExecutingAssembly().Location;
+			var dir = System.IO.Path.GetDirectoryName(x);
+			var ico = System.IO.Path.Combine(dir, "logo.ico");
+			this._notificationIcon.Icon = new System.Drawing.Icon(ico);
 			this._notificationIcon.Click += new EventHandler(_notificationIcon_Click);
 			this._notificationIcon.ContextMenu = this._notificationMenu;
 			this._notificationIcon.Visible = true;
@@ -129,8 +132,13 @@ namespace Tabalt
 
 
 			StringBuilder sb = new StringBuilder();
-
-			this.lvApplications.SelectedIndex = (this.lvApplications.Items.Count > 1 && string.IsNullOrEmpty(this.txtFilter.Text)) ? 1 : 0;
+			if (this.lvApplications.SelectedIndex < 0)
+			{
+				if (this.txtFilter.Text.Length > 0)
+					this.lvApplications.SelectedIndex = 0;
+				else
+					this.lvApplications.SelectedIndex = (this.lvApplications.Items.Count > 1) ? 1 : 0;
+			}
 		
 			this.UpdateBigIconFromSelection();
 		}
@@ -185,7 +193,10 @@ namespace Tabalt
 					return true;
 				foreach (var item in this.lvApplications.SelectedItems)
 				{
-					((ListViewItem)lvApplications.ItemContainerGenerator.ContainerFromItem(item)).Visibility = System.Windows.Visibility.Hidden;
+          var listviewItem = ((ListViewItem)lvApplications.ItemContainerGenerator.ContainerFromItem(item));
+          if (listviewItem == null)
+            continue;
+					listviewItem.Visibility = System.Windows.Visibility.Hidden;
 					((ApplicationRecord)item).Window.Close();
 				}
 				this.ListApplications();
