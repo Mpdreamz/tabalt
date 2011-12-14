@@ -157,6 +157,16 @@ namespace Tabalt.Domain
 
 			if (hWnd == User32.GetForegroundWindow())
 				return;
+			//cmd needs to be called synchronous.
+			if (this.ProcessName.EndsWith("cmd.exe"))
+			{
+				if (User32.IsIconic(hWnd))
+				{
+					User32.ShowWindow(hWnd, (int)WindowState.SW_RESTORE);
+				}
+				User32.SetForegroundWindow(hWnd);
+				return;
+			}
 
 			IntPtr ThreadID1 = User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), IntPtr.Zero);
 			IntPtr ThreadID2 = User32.GetWindowThreadProcessId(hWnd, IntPtr.Zero);
@@ -183,17 +193,6 @@ namespace Tabalt.Domain
 				else
 					User32.ShowWindowAsync(hWnd, (int)WindowState.SW_SHOWNORMAL);
 			}
-      if (ThreadID1 != ThreadID2)
-      {
-        User32.AttachThreadInput(ThreadID1, ThreadID2, 1);
-        User32.SetForegroundWindow(hWnd);
-        User32.AttachThreadInput(ThreadID1, ThreadID2, 0);
-      }
-      else
-      {
-        User32.SetForegroundWindow(hWnd);
-      }
-
 		}
 
 		public void Activate()
