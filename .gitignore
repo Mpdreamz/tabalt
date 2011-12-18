@@ -11,3 +11,5 @@
 /src/Tabalt.Setup/Release
 /src/Tabalt.Setup - x86/Debug
 /src/Tabalt.Setup - x86/Release
+*.suo
+/install.log
