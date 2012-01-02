@@ -5,5 +5,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Tabalt")]
 [assembly: AssemblyProduct("Tabalt")]
 [assembly: AssemblyCopyright("Copyright (C) Martijn Laarman and contributors")]
-[assembly: AssemblyVersion("0.0.1")]
+[assembly: AssemblyVersion("0.0.2")]
 

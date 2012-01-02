@@ -4,7 +4,7 @@ require 'rake/clean'
 require 'rexml/document'
 require 'uuidtools'
 
-TABALT_VERSION = "0.0.1"
+TABALT_VERSION = "0.0.2"
 
 OUTPUT = "bin"
 
@@ -79,8 +79,11 @@ end
 desc "Gathers output files and copies them to the output folder"
 task :publish do
     Dir.mkdir(OUTPUT)
-    FileUtils.mv("src/Tabalt.Setup/Release/Tabalt.Setup.msi", "#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x64.msi")
-    FileUtils.mv("src/Tabalt.Setup - x86/Release/Tabalt.Setup.msi", "#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x86.msi")
+    Dir.glob("src/Tabalt.Site/**/*") do |name|
+        FileUtils.cp(name, OUTPUT)
+    end    
+    FileUtils.mv("src/Tabalt.Setup/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/Tabalt-#{TABALT_VERSION}-setup-x64.msi")
+    FileUtils.mv("src/Tabalt.Setup - x86/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/Tabalt-#{TABALT_VERSION}-setup-x86.msi")
 
     
 
