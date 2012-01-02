@@ -1,0 +1,34 @@
+body 
+{
+	background:#CCCCCC;
+}
+#download_logo_bar {
+	width:960px;
+	height:210px;
+	margin-left:auto;	
+	margin-right:auto;
+	background:url('logoish.jpg');
+	margin-top:100px;
+}
+
+#download_x86,
+#download_x64 {
+	position:relative;
+	top:110px;
+	left:55px;
+	display:none;
+}
+
+#download_nojs
+{
+	position:relative;
+	top:110px;
+	left:55px;
+}
+
+#download_nojs a {
+	display:block;
+	color:white;
+	font-family:sans-serif;
+	margin-bottom:5px;
+}
