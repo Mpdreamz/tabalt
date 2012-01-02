@@ -1,6 +1,7 @@
 body 
 {
 	background:#CCCCCC;
+	font-family:"Trebuchet MS", arial, sans-serif;
 }
 #download_logo_bar {
 	width:960px;
@@ -14,7 +15,7 @@ body
 #download_x86,
 #download_x64 {
 	position:relative;
-	top:110px;
+	top:107px;
 	left:55px;
 	display:none;
 }
@@ -25,7 +26,14 @@ body
 	top:110px;
 	left:55px;
 }
+#version_marker
+{
+	position:relative;
+	top:57px;
+	left:150px;
+	color:white;
 
+}
 #download_nojs a {
 	display:block;
 	color:white;

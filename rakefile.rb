@@ -4,7 +4,7 @@ require 'rake/clean'
 require 'rexml/document'
 require 'uuidtools'
 
-TABALT_VERSION = "0.0.2"
+tabalt_version = File.read("version.txt")
 
 OUTPUT = "bin"
 
@@ -27,7 +27,28 @@ Albacore.configure do |config|
 end
 
 desc "Compiles solution and runs unit tests"
-task :default => [:clean, :version, :prepare_setups, :setupx86, :setupx64, :publish, :addlauchoptionx64, :addlauchoptionx86]
+task :default => [
+    :clean, 
+    :version, 
+    :prepare_setups, 
+    :setupx86,
+    :setupx64,
+    :publish,
+    :addlauchoptionx64,
+    :addlauchoptionx86
+]
+
+task :release, [:version_number]  do |t, args|
+    args.with_defaults :version_number => tabalt_version
+    tabalt_version = args.version_number
+    File.open("version.txt", 'w') do |file|
+        file.puts args.version_number
+    end
+    Rake::Task[:default].reenable
+    Rake::Task[:default].invoke
+end
+
+
 
 #Add the folders that should be cleaned as part of the clean task
 CLEAN.include(OUTPUT)
@@ -35,7 +56,7 @@ CLEAN.include(FileList["src/**/#{CONFIGURATION}"])
 
 desc "Update shared assemblyinfo file for the build"
 assemblyinfo :version => [:clean] do |asm|
-    asm.version = TABALT_VERSION
+    asm.version = tabalt_version
     asm.company_name = "Tabalt"
     asm.product_name = "Tabalt"
     asm.title = "Tabalt"
@@ -51,7 +72,7 @@ task :prepare_setups do
         contents = File.read(file_name)
         File.open(file_name, 'w') do |file|
             file.puts contents
-              .gsub(/("ProductVersion" = "8:)\d+\.\d+\.\d+"/, "\\1#{TABALT_VERSION}\"")
+              .gsub(/("ProductVersion" = "8:)\d+\.\d+\.\d+"/, "\\1#{tabalt_version}\"")
               .gsub(/("ProductCode" = "8:){[^}]+}"/, "\\1{#{ProductCodeGuid}}\"")
               .gsub(/("PackageCode" = "8:){[^}]+}"/, "\\1{#{PackageCodeGuid}}\"")
       end    end
@@ -68,12 +89,12 @@ end
 
 exec :addlauchoptionx64 do |cmd|
     cmd.command = "cscript"
-    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x64.msi\""
+    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/downloads/tabalt-#{tabalt_version}-setup-x64.msi\""
 end
 
 exec :addlauchoptionx86 do |cmd|
     cmd.command = "cscript"
-    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/Tabalt-#{TABALT_VERSION}-setup-x86.msi\""
+    cmd.parameters = "\"src/Scripts/EnableLaunchApplication.js\" \"#{OUTPUT}/downloads/tabalt-#{tabalt_version}-setup-x86.msi\""
 end
 
 desc "Gathers output files and copies them to the output folder"
@@ -82,9 +103,15 @@ task :publish do
     Dir.glob("src/Tabalt.Site/**/*") do |name|
         FileUtils.cp(name, OUTPUT)
     end    
-    FileUtils.mv("src/Tabalt.Setup/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/Tabalt-#{TABALT_VERSION}-setup-x64.msi")
-    FileUtils.mv("src/Tabalt.Setup - x86/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/Tabalt-#{TABALT_VERSION}-setup-x86.msi")
+    Dir.mkdir(OUTPUT + "/downloads")
+    FileUtils.mv("src/Tabalt.Setup/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/tabalt-#{tabalt_version}-setup-x64.msi")
+    FileUtils.mv("src/Tabalt.Setup - x86/Release/Tabalt.Setup.msi", "#{OUTPUT}/downloads/tabalt-#{tabalt_version}-setup-x86.msi")
 
+    contents = File.read("#{OUTPUT}/index.html")
+    File.open("#{OUTPUT}/index.html", 'w') do |file|
+        file.puts contents
+          .gsub(/\[\[Version\]\]/, "#{tabalt_version}")
+    end
     
 
 end
