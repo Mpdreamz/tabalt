@@ -1,16 +1,6 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
+﻿Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalt", "TabAlt\Tabalt.csproj", "{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{10B86C74-04AA-405E-8CA7-70CA5A92EB64}"
-	ProjectSection(SolutionItems) = preProject
-		..\rakefile.rb = ..\rakefile.rb
-	EndProjectSection
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Tabalt.Setup x64", "Tabalt.Setup\Tabalt.Setup.vdproj", "{62EC2F98-CE3B-43CD-B86A-98174A308FA8}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Tabalt.Setup x86", "Tabalt.Setup - x86\Tabalt.Setup x86.vdproj", "{F9C3A128-77FC-40C1-B1EE-0289015A3562}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,16 +18,6 @@ Global
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Release|x64.Build.0 = Release|x64
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Release|x86.ActiveCfg = Release|x86
 		{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}.Release|x86.Build.0 = Release|x86
-		{62EC2F98-CE3B-43CD-B86A-98174A308FA8}.Debug|x64.ActiveCfg = Debug
-		{62EC2F98-CE3B-43CD-B86A-98174A308FA8}.Debug|x86.ActiveCfg = Debug
-		{62EC2F98-CE3B-43CD-B86A-98174A308FA8}.Release|x64.ActiveCfg = Release
-		{62EC2F98-CE3B-43CD-B86A-98174A308FA8}.Release|x64.Build.0 = Release
-		{62EC2F98-CE3B-43CD-B86A-98174A308FA8}.Release|x86.ActiveCfg = Release
-		{F9C3A128-77FC-40C1-B1EE-0289015A3562}.Debug|x64.ActiveCfg = Debug
-		{F9C3A128-77FC-40C1-B1EE-0289015A3562}.Debug|x86.ActiveCfg = Debug
-		{F9C3A128-77FC-40C1-B1EE-0289015A3562}.Release|x64.ActiveCfg = Release
-		{F9C3A128-77FC-40C1-B1EE-0289015A3562}.Release|x86.ActiveCfg = Release
-		{F9C3A128-77FC-40C1-B1EE-0289015A3562}.Release|x86.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
