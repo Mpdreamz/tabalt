@@ -28,20 +28,71 @@
                     <RowDefinition Height="60" MaxHeight="60" MinHeight="60" />
                     <RowDefinition Height="auto" MaxHeight="500" />
                 </Grid.RowDefinitions>
-                <Border Background="{StaticResource EntryFrameBrush}" CornerRadius="5" BorderBrush="{StaticResource EntryFrameBorderBrush}" BorderThickness="2,2,2,2" Margin="4" Panel.ZIndex="10">
+                <Border
+                    Background="{StaticResource EntryFrameBrush}"
+                    CornerRadius="5" BorderBrush="{StaticResource EntryFrameBorderBrush}" BorderThickness="2,2,2,2" Margin="4" Panel.ZIndex="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="42" />
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Image Name="BigIcon" Width="32" Height="32" Margin="5,0,0,0" Source="logo.png"/>
-                        <TextBox Grid.Column="1" CaretBrush="White"
-                                 TabIndex="0" Focusable="true"
-                                 Name="txtFilter" Background="Transparent" BorderBrush="{StaticResource EntryBorderBrush}" Foreground="White" FontSize="32" SelectionBrush="#FFD6DEF2" KeyUp="txtFilter_KeyUp" />
+                        <TextBox Grid.Column="1"
+                            CaretBrush="White"
+                            TabIndex="0" Focusable="true"
+                            Margin="10, 2, 0, 0"
+                            x:Name="txtFilter" Background="Transparent"
+                            BorderThickness="0"
+                            BorderBrush="{StaticResource EntryBorderBrush}" Foreground="White" FontSize="32" SelectionBrush="#FFD6DEF2" KeyUp="txtFilter_KeyUp" />
                     </Grid>
                 </Border>
-                <ListView Height="auto" MaxHeight="500" ItemsSource="{Binding ProcessViewCollection}" Grid.Row="1" BorderBrush="{StaticResource WindowFrameBorderBrush}"
-                          Name="lvApplications" Margin="3,-7,3,3" KeyDown="lvApplications_KeyDown" KeyUp="lvApplications_KeyUp">
+                <ListView Height="auto" MaxHeight="500" Grid.Row="1" BorderBrush="{StaticResource WindowFrameBorderBrush}"
+                    Background="{StaticResource ResultListBrush}"
+                          Name="lvApplications" Margin="3,-7,3,3" KeyDown="lvApplications_KeyDown" KeyUp="lvApplications_KeyUp" SelectionChanged="lvApplications_SelectionChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                        <Border
+                                            BorderBrush="Transparent"
+                                            BorderThickness="0"
+                                            Background="{TemplateBinding Background}">
+                                            <GridViewRowPresenter HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Width="Auto" Margin="0" Content="{TemplateBinding Content}"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="true" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" Value="#ff222222" />
+                                </MultiTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.Resources>
+                        <ControlTemplate x:Key="SelectedTemplate" TargetType="ListViewItem">
+                            <Border SnapsToDevicePixels="true"
+                                    BorderThickness="0"
+                                    BorderBrush="{StaticResource EntryBorderBrush}"
+                                    Background="{TemplateBinding Background}"
+                                    x:Name="border">
+                                <ContentControl
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                    Margin="2,2,2,2"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    BorderBrush="{StaticResource EntryBorderBrush}"
+                                    VerticalAlignment="Stretch"
+                                    >
+                                    <GridViewRowPresenter Content="{TemplateBinding Content}"/>
+                                    </ContentControl>
+                            </Border>
+                        </ControlTemplate>
+                    </ListView.Resources>
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel VirtualizingStackPanel.IsVirtualizing="True">
@@ -54,28 +105,27 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <!--use a panel to hold the icon-->
-                                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch">
+                                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                             <Image Margin="1,1,1,1" Source="{Binding Path=ImageSource}"  />
-                                            <TextBlock Margin="1,1,1,1" Text="{Binding Path=ProcessName}" />
+                                            <TextBlock Margin="1,1,1,1" Text="{Binding Path=ProcessName}" Foreground="Gray" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Header="Caption" Width="420">
+                            <GridViewColumn Header="Caption" Width="430">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding WindowTitle}" TextAlignment="Left" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="{Binding WindowTitle}" TextAlignment="Left" Foreground="White" HorizontalAlignment="Stretch"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                             <GridViewColumn Header="Memory" Width="80">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding CommittedMemory}" TextAlignment="Right" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="{Binding CommittedMemory}" TextAlignment="Right" Foreground="Gray" HorizontalAlignment="Stretch"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            
                         </GridView>
                     </ListView.View>
                 </ListView>

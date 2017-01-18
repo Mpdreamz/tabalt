@@ -14,7 +14,6 @@ namespace Tabalt.Domain
 
 	public static class ApplicationWindows
 	{
-
 		public static IEnumerable<ApplicationRecord> ApplicationRecords
 		{
 			get
@@ -33,7 +32,7 @@ namespace Tabalt.Domain
 								//Process = w.Process,
 								ImageSource = img,
 								ProcessPath = w.ProcessName,
-								ProcessName = processName,
+								ProcessName = processName.Replace(".exe", ""),
 								WindowTitle = w.Title,
 								CommittedMemory = w.Process.PrivateMemorySize64.FormatBytes(),
 								Window = w,
@@ -71,9 +70,9 @@ namespace Tabalt.Domain
 				var hash = new HashSet<IntPtr>();
 				var list = new List<ApplicationWindow>();
 
-				int count = User32.GetButtonCount(notificationAreaHwnd);
+				var count = User32.GetButtonCount(notificationAreaHwnd);
 
-				for (int i = 0; i < count; i++)
+				for (var i = 0; i < count; i++)
 				{
 					var window = User32.GetNthApplicationWindowOnNotificationArea(notificationAreaHwnd, i);
 					if (window == null)
@@ -85,14 +84,7 @@ namespace Tabalt.Domain
 			//          User32.SendMessage( hToolbar, TB.CUSTOMIZE, IntPtr.Zero, IntPtr.Zero );
 		}
 
-		public static IEnumerable<ApplicationWindow> AltTabable
-		{
-			get
-			{
-				foreach (var w in ApplicationWindows.FindAltTabableWindows())
-					yield return w;
-			}
-		}
+		public static IEnumerable<ApplicationWindow> AltTabable => ApplicationWindows.FindAltTabableWindows();
 
 		public static ApplicationWindow FindWindowByCaption(string caption)
 		{
@@ -112,7 +104,7 @@ namespace Tabalt.Domain
 
 		private static IEnumerable<ApplicationWindow> FindAltTabableWindows()
 		{
-			List<ApplicationWindow> windows = new List<ApplicationWindow>();
+			var windows = new List<ApplicationWindow>();
 			var ewp = new User32.EnumWindowsProc((hwnd, lparam) =>
 			{
 				ApplicationWindow window = null;
@@ -129,7 +121,7 @@ namespace Tabalt.Domain
 		private static ApplicationWindow GetApplicationWindow(int hwnd, int lparam)
 		{
 			var iHwnd = new IntPtr(hwnd);
-			StringBuilder title = new StringBuilder(256);
+			var title = new StringBuilder(256);
 			User32.GetWindowText(hwnd, title, 256);
 			var t = title.ToString();
 			uint processId = 0;
@@ -147,7 +139,7 @@ namespace Tabalt.Domain
 			var iHwnd = new IntPtr(hwnd);
 
 
-			StringBuilder title = new StringBuilder(256);
+			var title = new StringBuilder(256);
 			User32.GetWindowText(hwnd, title, 256);
 			var t = title.ToString();
 			//Skip if the window does not have a caption.

@@ -13,7 +13,6 @@ namespace Tabalt.Win32
 {
 	public static class User32
 	{
-
 		[DllImport("user32.dll")]
 		public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
 
@@ -153,10 +152,10 @@ namespace Tabalt.Win32
 
 		public static IntPtr GetNotificationToolbarWindowHandle()
 		{
-			IntPtr hShell = User32.FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
-			IntPtr hTray = User32.FindWindowEx(hShell, IntPtr.Zero, "TrayNotifyWnd", null);
-			IntPtr hPager = User32.FindWindowEx(hTray, IntPtr.Zero, "SysPager", null);
-			IntPtr hToolbar = User32.FindWindowEx(hPager, IntPtr.Zero, "ToolbarWindow32", null);
+			var hShell = User32.FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
+			var hTray = User32.FindWindowEx(hShell, IntPtr.Zero, "TrayNotifyWnd", null);
+			var hPager = User32.FindWindowEx(hTray, IntPtr.Zero, "SysPager", null);
+			var hToolbar = User32.FindWindowEx(hPager, IntPtr.Zero, "ToolbarWindow32", null);
 			return hToolbar;
 
 		}
@@ -166,12 +165,12 @@ namespace Tabalt.Win32
 		}
 		public static ApplicationWindow GetNthApplicationWindowOnNotificationArea(IntPtr notificationAreaHwnd, int i)
 		{
-			TBBUTTON tbButton = new TBBUTTON();
-			string text = String.Empty;
-			IntPtr ipWindowHandle = IntPtr.Zero;
+			var tbButton = new TBBUTTON();
+			var text = string.Empty;
+			var ipWindowHandle = IntPtr.Zero;
 
 			NotificationAreaWindow notificationAreaWindow;
-			bool b = User32.GetTBButton(notificationAreaHwnd, i, ref tbButton, ref text, ref ipWindowHandle, out notificationAreaWindow);
+			var b = User32.GetTBButton(notificationAreaHwnd, i, ref tbButton, ref text, ref ipWindowHandle, out notificationAreaWindow);
 			if (!b)
 				return null;
 
@@ -203,17 +202,17 @@ namespace Tabalt.Win32
 		private static RECT GetRect(IntPtr hwnd)
 		{
 			RECT rct;
-			Rectangle myRect = new Rectangle();
 			if (!GetWindowRect(new HandleRef(new object { }, hwnd), out rct))
 			{
 				return rct;
 			}
-
-			myRect.X = rct.Left;
-			myRect.Y = rct.Top;
-			myRect.Width = rct.Right - rct.Left + 1;
-			myRect.Height = rct.Bottom - rct.Top + 1;
-
+			var myRect = new Rectangle
+			{
+				X = rct.Left,
+				Y = rct.Top,
+				Width = rct.Right - rct.Left + 1,
+				Height = rct.Bottom - rct.Top + 1
+			};
 			return rct;
 		}
 
@@ -223,15 +222,15 @@ namespace Tabalt.Win32
 			// One page
 			const int BUFFER_SIZE = 0x1000;
 
-			byte[] localBuffer = new byte[BUFFER_SIZE];
+			var localBuffer = new byte[BUFFER_SIZE];
 
 			uint processId = 0;
-			UInt32 threadId = User32.GetWindowThreadProcessId(hToolbar, out processId);
+			uint threadId = User32.GetWindowThreadProcessId(hToolbar, out processId);
 
-			IntPtr hProcess = Kernel32.OpenProcess(ProcessRights.ALL_ACCESS, false, processId);
+			var hProcess = Kernel32.OpenProcess(ProcessRights.ALL_ACCESS, false, processId);
 			if (hProcess == IntPtr.Zero) { Debug.Assert(false); return false; }
 
-			IntPtr ipRemoteBuffer = Kernel32.VirtualAllocEx(
+			var ipRemoteBuffer = Kernel32.VirtualAllocEx(
 				hProcess,
 				IntPtr.Zero,
 				new UIntPtr(BUFFER_SIZE),
@@ -241,20 +240,20 @@ namespace Tabalt.Win32
 			if (ipRemoteBuffer == IntPtr.Zero) { Debug.Assert(false); return false; }
 
 			// TBButton
-			fixed (TBBUTTON* pTBButton = &tbButton)
+			fixed (TBBUTTON* pTbButton = &tbButton)
 			{
-				IntPtr ipTBButton = new IntPtr(pTBButton);
+				var ipTbButton = new IntPtr(pTbButton);
 
-				int b = (int)User32.SendMessage(hToolbar, TB.GETBUTTON, (IntPtr)i, ipRemoteBuffer);
+				var b = (int)User32.SendMessage(hToolbar, TB.GETBUTTON, (IntPtr)i, ipRemoteBuffer);
 				if (b == 0) { Debug.Assert(false); return false; }
 
-				Int32 dwBytesRead = 0;
-				IntPtr ipBytesRead = new IntPtr(&dwBytesRead);
+				var dwBytesRead = 0;
+				var ipBytesRead = new IntPtr(&dwBytesRead);
 
-				bool b2 = Kernel32.ReadProcessMemory(
+				var b2 = Kernel32.ReadProcessMemory(
 					hProcess,
 					ipRemoteBuffer,
-					ipTBButton,
+					ipTbButton,
 					new UIntPtr((uint)sizeof(TBBUTTON)),
 					ipBytesRead);
 
@@ -264,16 +263,16 @@ namespace Tabalt.Win32
 			// button text
 			fixed (byte* pLocalBuffer = localBuffer)
 			{
-				IntPtr ipLocalBuffer = new IntPtr(pLocalBuffer);
+				var ipLocalBuffer = new IntPtr(pLocalBuffer);
 
-				int chars = (int)User32.SendMessage(hToolbar, TB.GETBUTTONTEXTW, (IntPtr)tbButton.idCommand, ipRemoteBuffer);
+				var chars = (int)User32.SendMessage(hToolbar, TB.GETBUTTONTEXTW, (IntPtr)tbButton.idCommand, ipRemoteBuffer);
 
 				if (chars == -1) { Debug.Assert(false); return false; }
 
-				Int32 dwBytesRead = 0;
-				IntPtr ipBytesRead = new IntPtr(&dwBytesRead);
+				var dwBytesRead = 0;
+				var ipBytesRead = new IntPtr(&dwBytesRead);
 
-				bool b4 = Kernel32.ReadProcessMemory(
+				var b4 = Kernel32.ReadProcessMemory(
 					hProcess,
 					ipRemoteBuffer,
 					ipLocalBuffer,
@@ -290,14 +289,14 @@ namespace Tabalt.Win32
 			// window handle
 			fixed (byte* pLocalBuffer = localBuffer)
 			{
-				IntPtr ipLocalBuffer = new IntPtr(pLocalBuffer);
+				var ipLocalBuffer = new IntPtr(pLocalBuffer);
 
-				Int32 dwBytesRead = 0;
-				IntPtr ipBytesRead = new IntPtr(&dwBytesRead);
+				var dwBytesRead = 0;
+				var ipBytesRead = new IntPtr(&dwBytesRead);
 
 				var ipRemoteData = tbButton.dwData;
 
-				bool b4 = Kernel32.ReadProcessMemory(
+				var b4 = Kernel32.ReadProcessMemory(
 					hProcess,
 					ipRemoteData,
 					ipLocalBuffer,
@@ -308,7 +307,7 @@ namespace Tabalt.Win32
 
 				if (dwBytesRead != 4) { Debug.Assert(false); return false; }
 
-				Int32 iWindowHandle = BitConverter.ToInt32(localBuffer, 0);
+				var iWindowHandle = BitConverter.ToInt32(localBuffer, 0);
 				if (iWindowHandle == -1) { Debug.Assert(false); }//return false; }
 
 				ipWindowHandle = new IntPtr(iWindowHandle);
@@ -319,23 +318,23 @@ namespace Tabalt.Win32
 			uint dwTrayProcessID = 0;
 			GetWindowThreadProcessId(hToolbar, out dwTrayProcessID);
 			if (dwTrayProcessID <= 0) { return false; }
-			IntPtr hTrayProc = Kernel32.OpenProcess(PROCESS_ALL_ACCESS, 0, dwTrayProcessID);
+			var hTrayProc = Kernel32.OpenProcess(PROCESS_ALL_ACCESS, 0, dwTrayProcessID);
 			if (hTrayProc == IntPtr.Zero) { return false; }
-			IntPtr lpData = Kernel32.VirtualAllocEx(hTrayProc, IntPtr.Zero, Marshal.SizeOf(tbButton.GetType()), MEM_COMMIT, PAGE_READWRITE);
+			var lpData = Kernel32.VirtualAllocEx(hTrayProc, IntPtr.Zero, Marshal.SizeOf(tbButton.GetType()), MEM_COMMIT, PAGE_READWRITE);
 			if (lpData == IntPtr.Zero) { Kernel32.CloseHandle(hTrayProc); return false; }
 
 			// Show tray icon if hidden
 			//if ((tbButton.fsState & (byte)TBSTATE_HIDDEN) == (byte)TBSTATE_HIDDEN) SendMessage(hToolbar, TB_HIDEBUTTON, tbButton.idCommand, 1);
 			// Get rectangle of tray icon
-			Int32 dwBytesRead2 = -1;
+			var dwBytesRead2 = -1;
 			var rectNotifyIcon = new RECT(0, 0, 0, 0);
-			byte[] byteBuffer3 = new byte[Marshal.SizeOf(rectNotifyIcon.GetType())];
+			var byteBuffer3 = new byte[Marshal.SizeOf(rectNotifyIcon.GetType())];
 
 			SendMessage(hToolbar, TB.GETITEMRECT, tbButton.idCommand, lpData);
 			Kernel32.ReadProcessMemory(hTrayProc, lpData, byteBuffer3, Marshal.SizeOf(rectNotifyIcon.GetType()), out dwBytesRead2);
 			if (dwBytesRead2 < Marshal.SizeOf(rectNotifyIcon.GetType())) { return false; }
 
-			IntPtr ptrOut2 = Marshal.AllocHGlobal(Marshal.SizeOf(rectNotifyIcon.GetType()));
+			var ptrOut2 = Marshal.AllocHGlobal(Marshal.SizeOf(rectNotifyIcon.GetType()));
 			Marshal.Copy(byteBuffer3, 0, ptrOut2, byteBuffer3.Length);
 			rectNotifyIcon = (RECT)Marshal.PtrToStructure(ptrOut2, typeof(RECT));
 			//MapWindowPoints(hToolbar, IntPtr.Zero, ref rectNotifyIcon, 2);
@@ -377,15 +376,14 @@ namespace Tabalt.Win32
 	
 		public static string GetWindowModuleFileNameFromHandle(IntPtr hWnd)
 		{
-			var r = string.Empty;
 			uint processId = 0;
 			const int nChars = 1024;
-			StringBuilder filename = new StringBuilder(nChars);
+			var filename = new StringBuilder(nChars);
 			User32.GetWindowThreadProcessId(hWnd, out processId);
-			IntPtr hProcess = Kernel32.OpenProcess(1040, 0, processId);
+			var hProcess = Kernel32.OpenProcess(1040, 0, processId);
 			PSAPI.GetModuleFileNameEx(hProcess, IntPtr.Zero, filename, nChars);
 			Kernel32.CloseHandle(hProcess);
-			r = filename.ToString();
+			var r = filename.ToString();
 			if (r.StartsWith("?"))
 				r = "C" + r.Substring(1, r.Length - 1);
 			return r;
@@ -393,10 +391,9 @@ namespace Tabalt.Win32
 		
 		public static string GetClassNameFromHwnd(IntPtr hwnd)
 		{
-			int nRet;
-			StringBuilder className = new StringBuilder(256);
+			var className = new StringBuilder(256);
 			//Get the window class name
-			nRet = GetClassName(hwnd, className, className.Capacity);
+			var nRet = GetClassName(hwnd, className, className.Capacity);
 			return (nRet != 0) ? className.ToString() : string.Empty;
 		}
 
@@ -410,28 +407,22 @@ namespace Tabalt.Win32
 			//1. For each visible window, walk up its owner chain until you find the root owner. 
 			//2. Then walk back down the visible last active popup chain until you find a visible window.
 			//3. If you're back to where you're started, (look for exceptions) then put the window in the Alt+Tab list.
-			IntPtr root = User32.GetAncestor(window, User32.GetAncestor_Flags.GetRootOwner);
+			var root = User32.GetAncestor(window, User32.GetAncestor_Flags.GetRootOwner);
 
-			if (GetLastVisibleActivePopUpOfWindow(root) == window)
-			{
-				var className = User32.GetClassNameFromHwnd(window);
+			if (GetLastVisibleActivePopUpOfWindow(root) != window) return false;
 
-				if (className == "Shell_TrayWnd" ||                          //Windows taskbar
-					className == "DV2ControlHost" ||                         //Windows startmenu, if open
-					//(className == "Button" && windowText == "Start") ||   //Windows startmenu-button.
-					className == "MsgrIMEWindowClass" ||                     //Live messenger's notifybox i think
-					className == "SysShadow" ||                              //Live messenger's shadow-hack
-					className.StartsWith("WMP9MediaBarFlyout"))              //WMP's "now playing" taskbar-toolbar
-					return false;
+			var className = User32.GetClassNameFromHwnd(window);
 
-				return true;
-			}
-			return false;
+			return className != "Shell_TrayWnd"
+			       && className != "DV2ControlHost"
+			       && className != "MsgrIMEWindowClass"
+			       && className != "SysShadow"
+			       && !className.StartsWith("WMP9MediaBarFlyout");
 		}
 
 		public static IntPtr GetLastVisibleActivePopUpOfWindow(IntPtr window)
 		{
-			IntPtr lastPopUp = User32.GetLastActivePopup(window);
+			var lastPopUp = User32.GetLastActivePopup(window);
 			if (User32.IsWindowVisible((int)lastPopUp))
 				return lastPopUp;
 			else if (lastPopUp == window)

@@ -13,3 +13,4 @@
 /src/Tabalt.Setup - x86/Release
 *.suo
 /install.log
+.idea

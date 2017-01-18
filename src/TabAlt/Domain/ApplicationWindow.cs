@@ -14,24 +14,23 @@ namespace Tabalt.Domain
 {
 	public class ApplicationWindow
 	{
-		private User32.NotificationAreaWindow NotificationAreaWindow { get; set; }
-		private TBBUTTON Button { get; set; }
-		public IntPtr hWnd { get; private set; }
-		public IntPtr NotificationIconHwnd { get; private set; }
-		public string Title { get; private set; }
+		private User32.NotificationAreaWindow NotificationAreaWindow { get; }
+		private TBBUTTON Button { get; }
+		public IntPtr hWnd { get; }
+		public IntPtr NotificationIconHwnd { get; }
+		public string Title { get; }
+
 		private Process _process = null;
 		public Process Process
 		{
 			get
 			{
-				if (this._process == null)
+				if (this._process != null) return this._process;
+				try
 				{
-					try
-					{
-						this._process = Process.GetProcessById(this.ProcessId);
-					}
-					catch { }
+					this._process = Process.GetProcessById(this.ProcessId);
 				}
+				catch { }
 				return this._process;
 			}
 		}
@@ -39,7 +38,7 @@ namespace Tabalt.Domain
 		public string ProcessName { get; private set; }
 
 		private bool _visible = true;
-		private bool _wasMaximized = false;
+		private bool _wasMaximized;
 		public bool Visible
 		{
 			get { return _visible; }
@@ -47,7 +46,7 @@ namespace Tabalt.Domain
 			{
 				//show the window
 
-				if (value == true)
+				if (value)
 				{
 					if (_wasMaximized)
 					{
@@ -59,24 +58,16 @@ namespace Tabalt.Domain
 						if (User32.ShowWindowAsync(this.hWnd, (int)WindowState.SW_SHOWNORMAL))
 							_visible = true;
 					}
+					return;
 				}
 				//hide the window
 
-				if (value == false)
-				{
-					_wasMaximized = User32.IsZoomed(this.hWnd);
-					if (User32.ShowWindowAsync(this.hWnd, (int)WindowState.SW_HIDE))
-						_visible = false;
-				}
+				_wasMaximized = User32.IsZoomed(this.hWnd);
+				if (User32.ShowWindowAsync(this.hWnd, (int)WindowState.SW_HIDE))
+					_visible = false;
 			}
 		}
 
-		/// <summary>
-		/// Constructs a Window Object
-		/// </summary>
-		/// <param name="Title">Title Caption</param>
-		/// <param name="hWnd">Handle</param>
-		/// <param name="Process">Owning Process</param>
 		public ApplicationWindow(string title, IntPtr hWnd, int processId, string processName)
 		{
 			this.Title = title ?? string.Empty;
@@ -84,6 +75,7 @@ namespace Tabalt.Domain
 			this.ProcessId = processId;
 			this.ProcessName = processName;
 		}
+
 		public ApplicationWindow(int processId, string processName, User32.NotificationAreaWindow notificationArea)
 			: this(notificationArea.Text, notificationArea.MainWindowHandle, processId, processName)
 		{
@@ -91,18 +83,8 @@ namespace Tabalt.Domain
 			this.NotificationIconHwnd = notificationArea.ToolBarIconHandle;
 			this.NotificationAreaWindow = notificationArea;
 		}
-		//Override ToString() 
 
-		public override string ToString()
-		{
-			return this.Title ?? string.Empty;
-		}
-
-		/// <summary>
-
-		/// Sets focus to this Window Object
-
-		/// </summary>
+		public override string ToString() => this.Title ?? string.Empty;
 
 		public void ActivateOnLastActiveScreen()
 		{
@@ -119,8 +101,8 @@ namespace Tabalt.Domain
 				return;
 			}
 
-			var lastScreen = this.GetScreenFromRect(lastRect);
-			var newScreen = this.GetScreenFromRect(newRect);
+			var lastScreen = GetScreenFromRect(lastRect);
+			var newScreen = GetScreenFromRect(newRect);
 			if (!lastScreen.Bounds.Equals(newScreen.Bounds))
 			{
 				var x = (newRect.Left - newScreen.Bounds.X) + lastScreen.Bounds.X;
@@ -133,7 +115,7 @@ namespace Tabalt.Domain
 			this.Activate();
 
 		}
-		private Screen GetScreenFromRect(RECT rect)
+		private static Screen GetScreenFromRect(RECT rect)
 		{
 			var x = rect.Left;
 			var y = rect.Top;
@@ -148,9 +130,9 @@ namespace Tabalt.Domain
 			});
 		}
 
-		public static IntPtr MakeLParam(int LoWord, int HiWord)
+		public static IntPtr MakeLParam(int loWord, int hiWord)
 		{
-			return new IntPtr((HiWord << 16) | (LoWord & 0xffff));
+			return new IntPtr((hiWord << 16) | (loWord & 0xffff));
 		}
 		public void Activate(IntPtr hWnd)
 		{
@@ -168,14 +150,14 @@ namespace Tabalt.Domain
 				return;
 			}
 
-			IntPtr ThreadID1 = User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), IntPtr.Zero);
-			IntPtr ThreadID2 = User32.GetWindowThreadProcessId(hWnd, IntPtr.Zero);
+			var threadId1 = User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), IntPtr.Zero);
+			var threadId2 = User32.GetWindowThreadProcessId(hWnd, IntPtr.Zero);
 
-			if (ThreadID1 != ThreadID2)
+			if (threadId1 != threadId2)
 			{
-				User32.AttachThreadInput(ThreadID1, ThreadID2, 1);
+				User32.AttachThreadInput(threadId1, threadId2, 1);
 				User32.SetForegroundWindow(hWnd);
-				User32.AttachThreadInput(ThreadID1, ThreadID2, 0);
+				User32.AttachThreadInput(threadId1, threadId2, 0);
 			}
 			else
 			{
@@ -210,11 +192,16 @@ namespace Tabalt.Domain
 		}
 		public void StartNewInstance()
 		{
-			Process p = new Process();
-			p.StartInfo.RedirectStandardOutput = false;
-			p.StartInfo.FileName = this.ProcessName;
-			p.StartInfo.UseShellExecute = true;
-			p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+			var p = new Process
+			{
+				StartInfo =
+				{
+					RedirectStandardOutput = false,
+					FileName = this.ProcessName,
+					UseShellExecute = true,
+					WindowStyle = ProcessWindowStyle.Normal
+				}
+			};
 			p.Start();
 			var hwnd = p.Handle;
 			this.Activate(hwnd);

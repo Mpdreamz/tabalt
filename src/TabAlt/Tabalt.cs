@@ -12,11 +12,6 @@ namespace Tabalt
 
 		public static event Action ActivationRequested = delegate { };
 
-
-		static TabaltHooks()
-		{
-			
-		}
 		public static void AltTabHook()
 		{
 			User32KeyboardHook.Hook(() =>
