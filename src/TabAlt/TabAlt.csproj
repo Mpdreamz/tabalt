@@ -116,7 +116,6 @@
     <Compile Include="Win32\User32KeyboardHook.cs" />
     <Compile Include="Domain\ApplicationWindow.cs" />
     <Compile Include="Win32\WindowStylesEx.cs" />
-    <Compile Include="WPF\Behaviours\GridViewColumnResize.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -30,7 +30,7 @@ namespace Tabalt.Domain
 							new ApplicationRecord
 							{
 								//Process = w.Process,
-								ImageSource = img,
+								ImageSource =  System.Drawing.Icon.ExtractAssociatedIcon(w.ProcessName).ToImageSource(), //img
 								ProcessPath = w.ProcessName,
 								ProcessName = processName.Replace(".exe", ""),
 								WindowTitle = w.Title,

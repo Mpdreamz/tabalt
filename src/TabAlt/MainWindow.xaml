@@ -105,9 +105,9 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <!--use a panel to hold the icon-->
-                                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                            <Image Margin="1,1,1,1" Source="{Binding Path=ImageSource}"  />
-                                            <TextBlock Margin="1,1,1,1" Text="{Binding Path=ProcessName}" Foreground="Gray" VerticalAlignment="Center"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="30">
+                                            <Image Margin="3,3,3,3" Height="24" Width="24" Source="{Binding Path=ImageSource}"/>
+                                            <TextBlock Margin="1,1,1,1" Text="{Binding Path=ProcessName}" Foreground="Orange" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
@@ -122,7 +122,7 @@
                             <GridViewColumn Header="Memory" Width="80">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding CommittedMemory}" TextAlignment="Right" Foreground="Gray" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="{Binding CommittedMemory}" TextAlignment="Right" Foreground="Gray" HorizontalAlignment="Right"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
