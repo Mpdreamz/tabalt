@@ -2,6 +2,8 @@
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalt", "TabAlt\Tabalt.csproj", "{C526562E-BF3D-4C53-A0EF-29B1428B2B2F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{B38349E8-97CF-46DC-95B7-2E512C256D90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

@@ -15,17 +15,12 @@ namespace Tabalt
 	/// </summary>
 	public partial class App : Application
 	{
-		private static int _processId = Process.GetCurrentProcess().Id;
-		public static int ProcessId
-		{
-			get
-			{
-				return _processId;
-			}
-		}
+		public static int ProcessId { get; } = Process.GetCurrentProcess().Id;
+
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+			TabaltHooks.AltTabHook();
 		}
 	}
 }

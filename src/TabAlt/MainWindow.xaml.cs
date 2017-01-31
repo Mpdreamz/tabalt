@@ -1,61 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Diagnostics;
-using System.Drawing;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using System.Security;
-using System.Runtime.InteropServices;
-using System.Management;
 using System.ComponentModel;
 using System.Windows.Threading;
-using System.Threading;
+using ReactiveUI;
 using Tabalt.Win32;
 using Tabalt.Domain;
-using System.Windows.Controls.Primitives;
-using System.Reflection;
 
 namespace Tabalt
 {
-	public partial class MainWindow : Window
+	public partial class MainWindow : Window, IViewFor<TabaltModel>
 	{
-		private bool DeActivatedWhileSwitching { get; set; }
-		private System.Windows.Forms.NotifyIcon _notificationIcon;
-		private System.Windows.Forms.ContextMenu _notificationMenu;
+		object IViewFor.ViewModel
+		{
+			get { return ViewModel; }
+			set { ViewModel = (TabaltModel)value; }
+		}
 
+		public TabaltModel ViewModel { get; set; }
+		private NotifcationAreaIcon NotifcationAreaIcon { get; }
+
+		private bool DeActivatedWhileSwitching { get; set; }
 
 		public MainWindow()
 		{
-			TabaltHooks.AltTabHook();
 			TabaltHooks.AltTabPressed += this.OnAltTabPressed;
 			TabaltHooks.ActivationRequested += this.OnActivationRequested;
 
 			InitializeComponent();
-
-			this._notificationMenu = new System.Windows.Forms.ContextMenu();
-			var exitMenuItem = new System.Windows.Forms.MenuItem("&Quit", (s, e) => Application.Current.Shutdown());
-			this._notificationMenu.MenuItems.Add(exitMenuItem);
-
-			this._notificationIcon = new System.Windows.Forms.NotifyIcon();
-			this._notificationIcon.Text = "tabalt - An alternative ALT TAB implementation";
-			var x = Assembly.GetExecutingAssembly().Location;
-			var dir = System.IO.Path.GetDirectoryName(x);
-			var ico = System.IO.Path.Combine(dir, "logo.ico");
-			this._notificationIcon.Icon = new System.Drawing.Icon(ico);
-			this._notificationIcon.Click += new EventHandler(_notificationIcon_Click);
-			this._notificationIcon.ContextMenu = this._notificationMenu;
-			this._notificationIcon.Visible = true;
+			this.NotifcationAreaIcon = new NotifcationAreaIcon(_notificationIcon_Click, Application.Current.Shutdown);
 		}
 
 		public void ListApplications()
@@ -225,9 +203,7 @@ namespace Tabalt
 		private void OnClose(object sender, CancelEventArgs args)
 		{
 			User32KeyboardHook.UnHook();
-			this._notificationIcon.Visible = false;
-			this._notificationIcon.Dispose();
-			this._notificationIcon = null;
+			this.NotifcationAreaIcon.Dispose();
 		}
 
 		private WindowState _storedWindowState = WindowState.Normal;
@@ -288,5 +264,6 @@ namespace Tabalt
 
 			this.DeActivatedWhileSwitching = false;
 		}
+
 	}
 }

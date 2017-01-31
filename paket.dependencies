@@ -1,5 +1,7 @@
 source http://nuget.org/api/v2
 
+nuget reactiveui
+
 
 ##------ build tools --------------
 group build

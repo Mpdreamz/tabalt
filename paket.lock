@@ -1,4 +1,74 @@
-
+NUGET
+  remote: http://www.nuget.org/api/v2
+    reactiveui (7.1)
+      reactiveui-core (7.1)
+    reactiveui-core (7.1)
+      Rx-Core (>= 2.2.5) - framework: uap100
+      Rx-Interfaces (>= 2.2.5) - framework: uap100
+      Rx-Linq (>= 2.2.5) - framework: uap100
+      Rx-Main (>= 2.2.5) - framework: >= net45, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-PlatformServices (>= 2.2.5) - framework: uap100
+      Rx-WindowStoreApps (>= 2.2.5) - framework: uap100
+      Rx-WinRT (>= 2.2.5) - framework: uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Xaml (>= 2.2.5) - framework: >= net45, >= netstandard12, portable-win81+wpa81, winv4.5
+      Splat (>= 1.6.2) - framework: uap100
+      Splat (>= 1.4 < 2.0) - framework: >= net45, >= netstandard12, portable-win81+wpa81, winv4.5
+      System.Collections (>= 4.0.10) - framework: uap100
+      System.Diagnostics.Debug (>= 4.0.10) - framework: uap100
+      System.Diagnostics.Tools (>= 4.0) - framework: uap100
+      System.IO (>= 4.0.10) - framework: uap100
+      System.Linq (>= 4.0) - framework: uap100
+      System.Linq.Expressions (>= 4.0.10) - framework: uap100
+      System.ObjectModel (>= 4.0.10) - framework: uap100
+      System.Reflection (>= 4.0.10) - framework: uap100
+      System.Reflection.Extensions (>= 4.0) - framework: uap100
+      System.Runtime (>= 4.0.20) - framework: uap100
+      System.Runtime.Extensions (>= 4.0.10) - framework: uap100
+      System.Runtime.InteropServices.WindowsRuntime (>= 4.0) - framework: uap100
+      System.Runtime.Serialization.Primitives (>= 4.1) - framework: uap100
+      System.Runtime.Serialization.Xml (>= 4.1) - framework: uap100
+      System.Text.Encoding (>= 4.0.10) - framework: uap100
+      System.Threading (>= 4.0.10) - framework: uap100
+      System.Threading.Tasks (>= 4.0.10) - framework: uap100
+    Rx-Core (2.2.5) - framework: >= net45, uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Interfaces (2.2.5) - framework: >= net45, uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+    Rx-Linq (2.2.5) - framework: >= net45, uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Main (2.2.5) - framework: >= net45, uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
+      Rx-PlatformServices (>= 2.2.5)
+    Rx-PlatformServices (2.3) - framework: >= net45, uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Core (>= 2.2)
+      Rx-Interfaces (>= 2.2)
+    Rx-WindowStoreApps (2.2.5) - framework: uap100
+      Rx-Main (>= 2.2.5)
+      Rx-WinRT (>= 2.2.5)
+    Rx-WinRT (2.2.5) - framework: uap100, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Main (>= 2.2.5)
+    Rx-Xaml (2.2.5) - framework: >= net45, >= netstandard12, portable-win81+wpa81, winv4.5
+      Rx-Main (>= 2.2.5)
+    Splat (1.6.2) - framework: >= net45, >= netstandard12, portable-win81+wpa81, winv4.5
+    System.Collections (4.3) - framework: uap100
+    System.Diagnostics.Debug (4.3) - framework: uap100
+    System.Diagnostics.Tools (4.3) - framework: uap100
+    System.IO (4.3) - framework: uap100
+    System.Linq (4.3) - framework: uap100
+    System.Linq.Expressions (4.3) - framework: uap100
+    System.ObjectModel (4.3) - framework: uap100
+    System.Reflection (4.3) - framework: uap100
+    System.Reflection.Extensions (4.3) - framework: uap100
+    System.Runtime (4.3) - framework: uap100
+    System.Runtime.Extensions (4.3) - framework: uap100
+    System.Runtime.InteropServices.WindowsRuntime (4.3) - framework: uap100
+    System.Runtime.Serialization.Primitives (4.3) - framework: uap100
+    System.Runtime.Serialization.Xml (4.3) - framework: uap100
+    System.Text.Encoding (4.3) - framework: uap100
+    System.Threading (4.3) - framework: uap100
+    System.Threading.Tasks (4.3) - framework: uap100
 
 GROUP build
 NUGET
